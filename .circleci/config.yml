@@ -21,8 +21,8 @@ workflows:
 
 jobs:
   build-and-push-ui:
-    docker:
-      - image: cimg/base:stable
+    machine:
+      image: ubuntu-2004:202107-02
     environment:
       AWS_DEFAULT_REGION: eu-west-1
     steps:
