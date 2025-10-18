@@ -20,10 +20,12 @@ jobs:
               docker login --username AWS --password-stdin $ECR_REGISTRY
 
             echo "Building Docker image..."
-            docker build -t $ECR_REGISTRY/snapdeploy/snapdeploy-ui:$CIRCLE_SHA1 .
+            docker build -t $ECR_REGISTRY/snapdeploy/ui:$CIRCLE_SHA1 .
+            docker tag $ECR_REGISTRY/snapdeploy/ui:$CIRCLE_SHA1 $ECR_REGISTRY/snapdeploy/ui:latest
 
             echo "Pushing image to ECR..."
-            docker push $ECR_REGISTRY/snapdeploy/snapdeploy-ui:$CIRCLE_SHA1
+            docker push $ECR_REGISTRY/snapdeploy/ui:$CIRCLE_SHA1
+            docker push $ECR_REGISTRY/snapdeploy/ui:latest
 
       - run:
           name: Trigger ECS deployment
