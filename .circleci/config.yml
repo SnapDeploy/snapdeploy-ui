@@ -27,6 +27,7 @@ jobs:
       AWS_DEFAULT_REGION: eu-west-1
     steps:
       - checkout
+      - setup_remote_docker
       - aws-cli/setup
       - run:
           name: Login to ECR
