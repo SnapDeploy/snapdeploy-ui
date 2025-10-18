@@ -2,7 +2,7 @@ version: 2.1
 
 orbs:
   aws-ecr: circleci/aws-ecr@8.2.0
-  aws-ecs: circleci/aws-ecs@2.2.0
+  aws-cli: circleci/aws-cli@4.0.0
 
 workflows:
   build-and-deploy:
@@ -33,12 +33,17 @@ jobs:
           path: .
 
   deploy-ui:
-    executor: aws-ecs/default
+    docker:
+      - image: cimg/python:3.9
     environment:
       AWS_DEFAULT_REGION: eu-west-1
     steps:
-      - aws-ecs/update-service:
-          family: snapdeploy-dev-ui
-          cluster-name: snapdeploy-dev-cluster
-          service-name: snapdeploy-dev-ui
-          container-image-name-updates: "container=ui,tag=${CIRCLE_SHA1:0:7}"
+      - checkout
+      - aws-cli/setup
+      - run:
+          name: Update ECS Service
+          command: |
+            aws ecs update-service \
+              --cluster snapdeploy-dev-cluster \
+              --service snapdeploy-dev-ui \
+              --force-new-deployment
