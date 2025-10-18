@@ -1,34 +1,60 @@
-import { useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import {
+  SignInPage,
+  Overview,
+  DeploymentsPage,
+  ProfilePage,
+  SettingsPage,
+} from "./pages";
+import { DashboardLayout } from "./components/layout/DashboardLayout";
+
+function TestComponent() {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 text-center max-w-md">
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">
+          SnapDeploy Dashboard
+        </h1>
+        <p className="text-gray-600 mb-6">
+          Please set your VITE_CLERK_PUBLISHABLE_KEY in a .env file to enable
+          authentication.
+        </p>
+        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
+          Test Button
+        </button>
+      </div>
+    </div>
+  );
+}
 
 function App() {
-  const [count, setCount] = useState(0);
+  const hasValidClerkKey =
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY &&
+    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_placeholder";
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <BrowserRouter>
+      {!hasValidClerkKey ? (
+        <TestComponent />
+      ) : (
+        <>
+          <SignedOut>
+            <SignInPage />
+          </SignedOut>
+          <SignedIn>
+            <Routes>
+              <Route element={<DashboardLayout />}>
+                <Route path="/" element={<Overview />} />
+                <Route path="/deployments" element={<DeploymentsPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+              </Route>
+            </Routes>
+          </SignedIn>
+        </>
+      )}
+    </BrowserRouter>
   );
 }
 
