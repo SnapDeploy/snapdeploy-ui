@@ -1,0 +1,15 @@
+SERVICES
+1. core
+2. deployment + supervisor
+3. cleanup
+4. 
+
+HARD PARTS
+1. Creating/pushing of docker containers - deployment 
+2. Spinning up new instances based on those containers - deployment
+3. Adding a custom domain to each container - deployment
+4. Env variables taken from the DB - core + deployment
+5. Deployment of main app to ec2 - deployment
+6. deleting of recources - clenup
+7. User managment - core
+8. Project manager - core
