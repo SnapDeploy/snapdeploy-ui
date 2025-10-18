@@ -7,12 +7,12 @@ workflows:
   build-and-deploy:
     jobs:
       - build-and-push-ui:
-          context: aws-credentials
+          context: AWS
           filters:
             branches:
               only: main
       - deploy-ui:
-          context: aws-credentials
+          context: AWS
           requires:
             - build-and-push-ui
           filters:
@@ -29,23 +29,17 @@ jobs:
       - checkout
       - aws-cli/setup
       - run:
-          name: Configure AWS CLI
-          command: |
-            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
-            aws configure set default.region $AWS_DEFAULT_REGION
-      - run:
           name: Login to ECR
           command: |
-            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
       - run:
           name: Build and Push Docker Image
           command: |
             docker build -t snapdeploy-ui .
-            docker tag snapdeploy-ui:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
-            docker tag snapdeploy-ui:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:latest
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
-            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:latest
+            docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
+            docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:latest
+            docker push $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
+            docker push $ECR_REGISTRY/snapdeploy-dev-ui:latest
 
   deploy-ui:
     docker:
