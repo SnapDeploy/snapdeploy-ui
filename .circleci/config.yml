@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  aws-ecr: circleci/aws-ecr@8.2.0
   aws-cli: circleci/aws-cli@4.0.0
 
 workflows:
@@ -22,15 +21,31 @@ workflows:
 
 jobs:
   build-and-push-ui:
-    executor: aws-ecr/default
+    docker:
+      - image: cimg/base:stable
+    environment:
+      AWS_DEFAULT_REGION: eu-west-1
     steps:
       - checkout
-      - aws-ecr/build-and-push-image:
-          repo: snapdeploy-dev-ui
-          tag: ${CIRCLE_SHA1:0:7},latest
-          region: eu-west-1
-          dockerfile: Dockerfile
-          path: .
+      - aws-cli/setup
+      - run:
+          name: Configure AWS CLI
+          command: |
+            aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
+            aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+            aws configure set default.region $AWS_DEFAULT_REGION
+      - run:
+          name: Login to ECR
+          command: |
+            aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com
+      - run:
+          name: Build and Push Docker Image
+          command: |
+            docker build -t snapdeploy-ui .
+            docker tag snapdeploy-ui:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
+            docker tag snapdeploy-ui:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:latest
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/snapdeploy-dev-ui:latest
 
   deploy-ui:
     docker:
