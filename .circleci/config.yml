@@ -1,0 +1,48 @@
+version: 2.1
+
+orbs:
+  aws-cli: circleci/aws-cli@5.3.0
+
+jobs:
+  build_and_deploy:
+    docker:
+      - image: cimg/node:20.11 # Node environment for Vite
+    steps:
+      - checkout
+      - setup_remote_docker
+
+      - run:
+          name: Install and build Vite app
+          command: |
+            corepack enable
+            pnpm install --frozen-lockfile
+            pnpm build
+
+      - run:
+          name: Build and push Docker image to ECR
+          command: |
+            echo "Logging in to ECR..."
+            aws ecr get-login-password --region $AWS_REGION | \
+              docker login --username AWS --password-stdin $ECR_REGISTRY
+
+            echo "Building Docker image..."
+            docker build -t $ECR_REGISTRY/snapdeploy-ui:$CIRCLE_SHA1 .
+
+            echo "Pushing image to ECR..."
+            docker push $ECR_REGISTRY/snapdeploy-ui:$CIRCLE_SHA1
+
+      - run:
+          name: Trigger ECS deployment
+          command: |
+            echo "Redeploying ECS service..."
+            aws ecs update-service \
+              --cluster $CLUSTER_NAME \
+              --service sd-ui \
+              --force-new-deployment
+
+workflows:
+  version: 2
+  deploy:
+    jobs:
+      - build_and_deploy:
+          context: AWS
