@@ -10,6 +10,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - aws-cli/setup
 
       - run:
           name: Build and push Docker image to ECR
