@@ -12,16 +12,6 @@ jobs:
       - aws-cli/setup
 
       - run:
-          name: Install dependencies and build application
-          command: |
-            echo "Installing dependencies..."
-            npm install -g pnpm
-            pnpm install
-            
-            echo "Building Vite application..."
-            pnpm run build
-
-      - run:
           name: Create deployment package
           command: |
             echo "Creating deployment package..."
@@ -37,12 +27,12 @@ jobs:
               --filters "Name=tag:Service,Values=ui" "Name=instance-state-name,Values=running" \
               --query 'Reservations[0].Instances[0].InstanceId' \
               --output text)
-            
+
             if [ "$INSTANCE_ID" = "None" ] || [ -z "$INSTANCE_ID" ]; then
               echo "Error: No running EC2 instance found with Service=ui tag"
               exit 1
             fi
-            
+
             echo "Found UI instance: $INSTANCE_ID"
             echo "export INSTANCE_ID=$INSTANCE_ID" >> $BASH_ENV
 
@@ -50,44 +40,44 @@ jobs:
           name: Deploy to EC2 using AWS Systems Manager
           command: |
             echo "Deploying to EC2 instance $INSTANCE_ID..."
-            
+
             # Upload the deployment package to S3
             aws s3 cp snapdeploy-ui-${CIRCLE_SHA1}.tar.gz s3://$S3_BUCKET/deployments/snapdeploy-ui-${CIRCLE_SHA1}.tar.gz
-            
+
             # Create a deployment script
             cat > deploy-ui.sh << 'EOF'
             #!/bin/bash
             set -e
-            
+
             echo "Starting UI deployment..."
-            
+
             # Download the deployment package
             aws s3 cp s3://$S3_BUCKET/deployments/snapdeploy-ui-$CIRCLE_SHA1.tar.gz /tmp/
-            
+
             # Backup current deployment
             if [ -d "/home/ec2-user/ui-html" ]; then
               mv /home/ec2-user/ui-html /home/ec2-user/ui-html.backup.$(date +%s)
             fi
-            
+
             # Create new deployment directory
             mkdir -p /home/ec2-user/ui-html
-            
+
             # Extract new deployment
             tar -xzf /tmp/snapdeploy-ui-$CIRCLE_SHA1.tar.gz -C /home/ec2-user/ui-html/
-            
+
             # Set proper permissions
             chown -R ec2-user:ec2-user /home/ec2-user/ui-html
             chmod -R 755 /home/ec2-user/ui-html
-            
+
             # Restart nginx to pick up changes
             sudo systemctl reload nginx
-            
+
             # Clean up
             rm -f /tmp/snapdeploy-ui-$CIRCLE_SHA1.tar.gz
-            
+
             echo "UI deployment completed successfully!"
             EOF
-            
+
             # Upload and execute the deployment script
             aws ssm send-command \
               --region $AWS_REGION \
@@ -101,7 +91,7 @@ jobs:
           command: |
             echo "Waiting for deployment to complete..."
             sleep 30
-            
+
             echo "Verifying deployment..."
             # Get the public IP of the instance
             PUBLIC_IP=$(aws ec2 describe-instances \
@@ -109,7 +99,7 @@ jobs:
               --instance-ids $INSTANCE_ID \
               --query 'Reservations[0].Instances[0].PublicIpAddress' \
               --output text)
-            
+
             if [ "$PUBLIC_IP" != "None" ] && [ -n "$PUBLIC_IP" ]; then
               echo "Testing deployment at http://$PUBLIC_IP"
               curl -f http://$PUBLIC_IP || echo "Warning: Could not reach deployed application"
