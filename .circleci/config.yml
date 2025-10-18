@@ -44,46 +44,25 @@ jobs:
             # Upload the deployment package to S3
             aws s3 cp snapdeploy-ui-${CIRCLE_SHA1}.tar.gz s3://$S3_BUCKET/deployments/snapdeploy-ui-${CIRCLE_SHA1}.tar.gz
 
-            # Create a deployment script
-            cat > deploy-ui.sh << 'EOF'
-            #!/bin/bash
-            set -e
-
-            echo "Starting UI deployment..."
-
-            # Download the deployment package
-            aws s3 cp s3://$S3_BUCKET/deployments/snapdeploy-ui-$CIRCLE_SHA1.tar.gz /tmp/
-
-            # Backup current deployment
-            if [ -d "/home/ec2-user/ui-html" ]; then
-              mv /home/ec2-user/ui-html /home/ec2-user/ui-html.backup.$(date +%s)
-            fi
-
-            # Create new deployment directory
-            mkdir -p /home/ec2-user/ui-html
-
-            # Extract new deployment
-            tar -xzf /tmp/snapdeploy-ui-$CIRCLE_SHA1.tar.gz -C /home/ec2-user/ui-html/
-
-            # Set proper permissions
-            chown -R ec2-user:ec2-user /home/ec2-user/ui-html
-            chmod -R 755 /home/ec2-user/ui-html
-
-            # Restart nginx to pick up changes
-            sudo systemctl reload nginx
-
-            # Clean up
-            rm -f /tmp/snapdeploy-ui-$CIRCLE_SHA1.tar.gz
-
-            echo "UI deployment completed successfully!"
-            EOF
-
-            # Upload and execute the deployment script
+            # Execute deployment commands directly via Systems Manager
             aws ssm send-command \
               --region $AWS_REGION \
               --instance-ids $INSTANCE_ID \
               --document-name "AWS-RunShellScript" \
-              --parameters 'commands=["#!/bin/bash", "set -e", "echo \"Starting UI deployment...\"", "aws s3 cp s3://'$S3_BUCKET'/deployments/snapdeploy-ui-'$CIRCLE_SHA1'.tar.gz /tmp/", "if [ -d \"/home/ec2-user/ui-html\" ]; then mv /home/ec2-user/ui-html /home/ec2-user/ui-html.backup.$(date +%s); fi", "mkdir -p /home/ec2-user/ui-html", "tar -xzf /tmp/snapdeploy-ui-'$CIRCLE_SHA1'.tar.gz -C /home/ec2-user/ui-html/", "chown -R ec2-user:ec2-user /home/ec2-user/ui-html", "chmod -R 755 /home/ec2-user/ui-html", "sudo systemctl reload nginx", "rm -f /tmp/snapdeploy-ui-'$CIRCLE_SHA1'.tar.gz", "echo \"UI deployment completed successfully!\""]' \
+              --parameters 'commands=[
+                "#!/bin/bash",
+                "set -e",
+                "echo \"Starting UI deployment...\"",
+                "aws s3 cp s3://'$S3_BUCKET'/deployments/snapdeploy-ui-'$CIRCLE_SHA1'.tar.gz /tmp/",
+                "if [ -d \"/home/ec2-user/ui-html\" ]; then mv /home/ec2-user/ui-html /home/ec2-user/ui-html.backup.$(date +%s); fi",
+                "mkdir -p /home/ec2-user/ui-html",
+                "tar -xzf /tmp/snapdeploy-ui-'$CIRCLE_SHA1'.tar.gz -C /home/ec2-user/ui-html/",
+                "chown -R ec2-user:ec2-user /home/ec2-user/ui-html",
+                "chmod -R 755 /home/ec2-user/ui-html",
+                "sudo systemctl reload nginx",
+                "rm -f /tmp/snapdeploy-ui-'$CIRCLE_SHA1'.tar.gz",
+                "echo \"UI deployment completed successfully!\""
+              ]' \
               --output text
 
       - run:
