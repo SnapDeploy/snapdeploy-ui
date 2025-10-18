@@ -12,13 +12,6 @@ jobs:
       - setup_remote_docker
 
       - run:
-          name: Install and build Vite app
-          command: |
-            corepack enable
-            pnpm install --frozen-lockfile
-            pnpm build
-
-      - run:
           name: Build and push Docker image to ECR
           command: |
             echo "Logging in to ECR..."
