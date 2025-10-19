@@ -11,9 +11,21 @@ export default defineConfig({
       },
     }),
   ],
-resolve: {
+  resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    // Generate source maps for debugging
+    sourcemap: true,
+    // Ensure proper minification
+    minify: true,
+  },
+  // Ensure proper base path for deployment
+  base: '/',
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', '@clerk/clerk-react', '@tanstack/react-query']
+  }
 })
