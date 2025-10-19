@@ -2,6 +2,9 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { ClerkProvider } from "@clerk/clerk-react";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
+import { queryClient } from "./lib/query-client";
 import "./index.css";
 
 const PUBLISHABLE_KEY =
@@ -9,8 +12,11 @@ const PUBLISHABLE_KEY =
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <App />
-    </ClerkProvider>
+    <QueryClientProvider client={queryClient}>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <App />
+        <ReactQueryDevtools initialIsOpen={false} />
+      </ClerkProvider>
+    </QueryClientProvider>
   </StrictMode>
 );

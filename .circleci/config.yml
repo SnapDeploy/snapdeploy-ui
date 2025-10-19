@@ -37,6 +37,7 @@ jobs:
       - run:
           name: Build and Push Docker Image
           command: |
+            echo "Building Docker image with Clerk key: ${VITE_CLERK_PUBLISHABLE_KEY:0:20}..."
             docker build --build-arg VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY -t snapdeploy-ui .
             docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
             docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:latest

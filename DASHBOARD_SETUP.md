@@ -236,3 +236,4 @@ For issues or questions:
 1. Check the shadcn/ui documentation: https://ui.shadcn.com
 2. Check Clerk documentation: https://clerk.com/docs
 3. Review the codebase comments and TypeScript types
+

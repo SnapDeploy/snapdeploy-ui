@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, Plus, GitBranch, Clock } from "lucide-react";
+import { useCurrentUser } from "@/hooks/useApiQueries";
 
 interface Deployment {
   id: string;
@@ -65,6 +66,11 @@ const envConfig = {
 };
 
 export function DeploymentsPage() {
+  const { data: user, isLoading, error } = useCurrentUser();
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+  if (!user) return <div>No user data</div>;
+  console.log(user);
   return (
     <div className="space-y-6">
       {/* Page Header */}
