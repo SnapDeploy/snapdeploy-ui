@@ -1,5 +1,5 @@
-import { apiClient, getAuthHeaders } from './client';
-import type { components, paths } from './types';
+import { apiClient } from './client';
+import type { components } from './types';
 
 // Type definitions (export all schemas that exist)
 export type User = components['schemas']['User'];

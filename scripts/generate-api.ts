@@ -47,8 +47,8 @@ export type { components } from './types';
     
     // Create service layer
     console.log('🛠️ Creating service layer...');
-    const serviceCode = `import { apiClient, getAuthHeaders } from './client';
-import type { components, paths } from './types';
+    const serviceCode = `import { apiClient } from './client';
+import type { components } from './types';
 
 // Type definitions (export all schemas that exist)
 export type User = components['schemas']['User'];

@@ -24,6 +24,6 @@ export function useApi() {
     setupApiAuth();
   }, [getToken, isLoaded, isSignedIn]);
 
-  return apiService;
+  return {apiService, isSignedIn};
 }
 
