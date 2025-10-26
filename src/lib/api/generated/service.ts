@@ -1,12 +1,9 @@
-import { apiClient } from './client';
-import type { components } from './types';
+import { apiClient, getAuthHeaders } from './client';
+import type { components, paths } from './types';
 
-// Type definitions
+// Type definitions (export all schemas that exist)
 export type User = components['schemas']['User'];
 export type HealthResponse = components['schemas']['HealthResponse'];
-export type UpdateUserRequest = components['schemas']['UpdateUserRequest'];
-export type UserListResponse = components['schemas']['UserListResponse'];
-export type Pagination = components['schemas']['Pagination'];
 export type Error = components['schemas']['Error'];
 
 // API Service class
@@ -19,10 +16,6 @@ export class ApiService {
 
   clearAuthToken() {
     this.token = undefined;
-  }
-
-  get isAuthenticated() {
-    return !!this.token;
   }
 
   private getHeaders() {
@@ -50,56 +43,6 @@ export class ApiService {
   // Authentication endpoints
   async getCurrentUser() {
     const { data, error } = await apiClient.GET('/auth/me', {
-      headers: this.getHeaders(),
-    });
-    
-    if (error) throw error;
-    return data;
-  }
-
-  // User management endpoints
-  async getUsers(params?: { page?: number; limit?: number }) {
-    const { data, error } = await apiClient.GET('/users', {
-      params: {
-        query: params,
-      },
-      headers: this.getHeaders(),
-    });
-    
-    if (error) throw error;
-    return data;
-  }
-
-  async getUserById(id: string) {
-    const { data, error } = await apiClient.GET('/users/{id}', {
-      params: {
-        path: { id },
-      },
-      headers: this.getHeaders(),
-    });
-    
-    if (error) throw error;
-    return data;
-  }
-
-  async updateUser(id: string, userData: UpdateUserRequest) {
-    const { data, error } = await apiClient.PUT('/users/{id}', {
-      params: {
-        path: { id },
-      },
-      body: userData,
-      headers: this.getHeaders(),
-    });
-    
-    if (error) throw error;
-    return data;
-  }
-
-  async deleteUser(id: string) {
-    const { data, error } = await apiClient.DELETE('/users/{id}', {
-      params: {
-        path: { id },
-      },
       headers: this.getHeaders(),
     });
     

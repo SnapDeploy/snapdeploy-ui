@@ -1,7 +1,7 @@
-import { useUser as useClerkUser } from "@clerk/clerk-react";
+import { useUserContext } from "../context/UserContext";
 
 export function useUser() {
-  return useClerkUser();
+  return useUserContext();
 }
 
 
