@@ -8,24 +8,7 @@ ARG VITE_CLERK_PUBLISHABLE_KEY
 ARG VITE_API_URL
 ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 ENV VITE_API_URL=$VITE_API_URL
-RUN echo "VITE_API_URL=$VITE_API_URL" > .env
-RUN echo "VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY" >> .env
-
-RUN echo "=== Build Args Verification ===" && \
-    echo "VITE_API_URL: ${VITE_API_URL}" && \
-    echo "VITE_CLERK_PUBLISHABLE_KEY (first 20 chars): ${VITE_CLERK_PUBLISHABLE_KEY:0:20}..." && \
-    echo "=============================="
-RUN pnpm build && \
-    echo "=== Build Complete ===" && \
-    echo "Dist folder contents:" && \
-    ls -la dist/ && \
-    echo "Index.html preview:" && \
-    head -20 dist/index.html && \
-    echo "=== Checking if env vars are embedded in build ===" && \
-    echo "Looking for API URL in built files..." && \
-    (grep -r "${VITE_API_URL}" dist/assets/ || echo "API URL not found in built files!") && \
-    echo "Checking for Clerk key prefix in built files..." && \
-    (grep -r "pk_" dist/assets/ | head -1 || echo "Clerk key not found in built files!")
+RUN pnpm build
 
 # Stage 2: Serve static files via nginx
 FROM nginx:stable-alpine

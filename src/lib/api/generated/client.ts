@@ -3,7 +3,7 @@ import type { paths } from './types';
 
 // Create the API client
 export const apiClient = createClient<paths>({
-  baseUrl:  'http://localhost:8080/api/v1',
+  baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:8080/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
