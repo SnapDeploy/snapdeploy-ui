@@ -28,8 +28,6 @@ jobs:
       - image: cimg/node:20.11
     environment:
       AWS_DEFAULT_REGION: eu-west-1
-      VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
-      VITE_API_URL: ${VITE_API_URL}
     steps:
       - checkout
       - setup_remote_docker
