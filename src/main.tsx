@@ -7,7 +7,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./lib/query-client";
 import "./index.css";
 
-const PUBLISHABLE_KEY = `pk_test_anVzdC1maWxseS0yMC5jbGVyay5hY2NvdW50cy5kZXYk`;
+const PUBLISHABLE_KEY = `pk_live_Y2xlcmsuc25hcC1kZXBsb3kuY29tJA`;
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
