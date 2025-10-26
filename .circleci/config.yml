@@ -50,8 +50,13 @@ jobs:
       - run:
           name: Build and Push Docker Image
           command: |
-            echo "Building with VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY:0:20}... and VITE_API_URL=${VITE_API_URL}"
+            echo "=== Full Environment Variable Values ==="
+            echo "VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY"
+            echo "VITE_API_URL=$VITE_API_URL"
+            echo "========================================="
             docker build \
+              --progress=plain \
+              --no-cache \
               --build-arg VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY \
               --build-arg VITE_API_URL=$VITE_API_URL \
               -t snapdeploy-ui .

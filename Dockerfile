@@ -20,7 +20,12 @@ RUN pnpm build && \
     echo "Dist folder contents:" && \
     ls -la dist/ && \
     echo "Index.html preview:" && \
-    head -20 dist/index.html
+    head -20 dist/index.html && \
+    echo "=== Checking if env vars are embedded in build ===" && \
+    echo "Looking for API URL in built files..." && \
+    (grep -r "${VITE_API_URL}" dist/assets/ || echo "API URL not found in built files!") && \
+    echo "Checking for Clerk key prefix in built files..." && \
+    (grep -r "pk_" dist/assets/ | head -1 || echo "Clerk key not found in built files!")
 
 # Stage 2: Serve static files via nginx
 FROM nginx:stable-alpine
