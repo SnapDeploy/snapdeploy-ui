@@ -27,6 +27,7 @@ import {
 import { useCurrentUser, useUserRepositories } from "@/hooks/useApiQueries";
 import { useCreateProject } from "@/hooks/useProjectMutations";
 import type { Repository } from "@/lib/api/generated/service";
+import type { Language } from "@/types";
 
 const STEPS = [
   {
@@ -149,11 +150,12 @@ export function CreateProjectPage() {
 
     try {
       await createProject.mutateAsync({
-        repository_url: selectedRepository.html_url || selectedRepository.url,
+        repository_url:
+          selectedRepository.html_url || selectedRepository.url || "",
         install_command: installCommand,
         build_command: buildCommand,
         run_command: runCommand,
-        language,
+        language: language as Language,
       });
       navigate("/projects");
     } catch (err) {
