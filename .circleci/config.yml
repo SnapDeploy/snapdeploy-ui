@@ -35,13 +35,26 @@ jobs:
       - setup_remote_docker
       - aws-cli/setup
       - run:
+          name: Verify Environment Variables
+          command: |
+            echo "Checking environment variables..."
+            echo "VITE_API_URL is set: ${VITE_API_URL:+YES}"
+            echo "VITE_API_URL value: ${VITE_API_URL}"
+            echo "VITE_CLERK_PUBLISHABLE_KEY is set: ${VITE_CLERK_PUBLISHABLE_KEY:+YES}"
+            echo "VITE_CLERK_PUBLISHABLE_KEY prefix: ${VITE_CLERK_PUBLISHABLE_KEY:0:20}..."
+            echo "ECR_REGISTRY: ${ECR_REGISTRY}"
+      - run:
           name: Login to ECR
           command: |
             aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REGISTRY
       - run:
           name: Build and Push Docker Image
           command: |
-            docker build --build-arg VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY --build-arg VITE_API_URL=$VITE_API_URL -t snapdeploy-ui .
+            echo "Building with VITE_CLERK_PUBLISHABLE_KEY=${VITE_CLERK_PUBLISHABLE_KEY:0:20}... and VITE_API_URL=${VITE_API_URL}"
+            docker build \
+              --build-arg VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY \
+              --build-arg VITE_API_URL=$VITE_API_URL \
+              -t snapdeploy-ui .
             docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
             docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:latest
             docker push $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
