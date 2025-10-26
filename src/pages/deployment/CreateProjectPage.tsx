@@ -2,6 +2,14 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -14,8 +22,10 @@ import {
   ChevronRight,
   Loader2,
   Check,
+  Rocket,
 } from "lucide-react";
 import { useCurrentUser, useUserRepositories } from "@/hooks/useApiQueries";
+import { useCreateProject } from "@/hooks/useProjectMutations";
 import type { Repository } from "@/lib/api/generated/service";
 
 const STEPS = [
@@ -27,7 +37,15 @@ const STEPS = [
   { id: 2, name: "Configure", description: "Set deployment options" },
 ];
 
-export function CreateDeploymentPage() {
+const LANGUAGES = [
+  { value: "NODE", label: "Node.js" },
+  { value: "NODE_TS", label: "Node.js + TypeScript" },
+  { value: "NEXTJS", label: "Next.js" },
+  { value: "GO", label: "Go" },
+  { value: "PYTHON", label: "Python" },
+] as const;
+
+export function CreateProjectPage() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [selectedRepository, setSelectedRepository] =
@@ -37,7 +55,14 @@ export function CreateDeploymentPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const limit = 10;
 
+  // Form state
+  const [installCommand, setInstallCommand] = useState("");
+  const [buildCommand, setBuildCommand] = useState("");
+  const [runCommand, setRunCommand] = useState("");
+  const [language, setLanguage] = useState<string>("");
+
   const { data: user } = useCurrentUser();
+  const createProject = useCreateProject(user?.id || "");
 
   // Debounce search input
   useEffect(() => {
@@ -48,6 +73,39 @@ export function CreateDeploymentPage() {
 
     return () => clearTimeout(timer);
   }, [searchInput]);
+
+  // Pre-fill form when language changes
+  useEffect(() => {
+    if (!language) return;
+
+    switch (language) {
+      case "NODE":
+        setInstallCommand("npm install");
+        setBuildCommand("npm run build");
+        setRunCommand("npm start");
+        break;
+      case "NODE_TS":
+        setInstallCommand("npm install");
+        setBuildCommand("npm run build");
+        setRunCommand("npm start");
+        break;
+      case "NEXTJS":
+        setInstallCommand("npm install");
+        setBuildCommand("npm run build");
+        setRunCommand("npm start");
+        break;
+      case "GO":
+        setInstallCommand("go mod download");
+        setBuildCommand("go build -o app");
+        setRunCommand("./app");
+        break;
+      case "PYTHON":
+        setInstallCommand("pip install -r requirements.txt");
+        setBuildCommand("python -m build");
+        setRunCommand("python main.py");
+        break;
+    }
+  }, [language]);
 
   const { data, isLoading, error } = useUserRepositories(user?.id, {
     page: currentPage,
@@ -64,6 +122,17 @@ export function CreateDeploymentPage() {
 
   const handleRepositorySelect = (repo: Repository) => {
     setSelectedRepository(repo);
+    // Auto-detect language from repository if possible
+    if (repo.language) {
+      const lang = repo.language.toUpperCase();
+      if (lang === "JAVASCRIPT" || lang === "TYPESCRIPT") {
+        setLanguage("NODE_TS");
+      } else if (lang === "GO") {
+        setLanguage("GO");
+      } else if (lang === "PYTHON") {
+        setLanguage("PYTHON");
+      }
+    }
     setStep(2);
   };
 
@@ -72,7 +141,24 @@ export function CreateDeploymentPage() {
   };
 
   const handleCancel = () => {
-    navigate("/deployments");
+    navigate("/projects");
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedRepository || !user) return;
+
+    try {
+      await createProject.mutateAsync({
+        repository_url: selectedRepository.html_url || selectedRepository.url,
+        install_command: installCommand,
+        build_command: buildCommand,
+        run_command: runCommand,
+        language,
+      });
+      navigate("/projects");
+    } catch (err) {
+      console.error("Failed to create project:", err);
+    }
   };
 
   const handleNextPage = () => {
@@ -87,16 +173,18 @@ export function CreateDeploymentPage() {
     }
   };
 
+  const isFormValid = installCommand && buildCommand && runCommand && language;
+
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
-            Create New Deployment
+            Create New Project
           </h1>
           <p className="text-gray-500 mt-2">
-            Deploy your application in a few simple steps
+            Set up your project for deployment in a few simple steps
           </p>
         </div>
 
@@ -303,10 +391,10 @@ export function CreateDeploymentPage() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-xl font-semibold text-gray-900 mb-2">
-                    Configure Deployment
+                    Configure Project
                   </h2>
                   <p className="text-gray-600">
-                    Set up your deployment configuration
+                    Set up your project build and runtime configuration
                   </p>
                 </div>
 
@@ -339,13 +427,64 @@ export function CreateDeploymentPage() {
                   </Card>
                 )}
 
-                {/* Configuration Form Placeholder */}
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-12">
-                  <div className="text-center text-gray-500">
-                    <p className="text-lg font-medium">
-                      Deployment configuration form
+                {/* Configuration Form */}
+                <div className="space-y-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="language">Language/Framework *</Label>
+                    <Select value={language} onValueChange={setLanguage}>
+                      <SelectTrigger id="language">
+                        <SelectValue placeholder="Select language or framework" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {LANGUAGES.map((lang) => (
+                          <SelectItem key={lang.value} value={lang.value}>
+                            {lang.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-sm text-gray-500">
+                      Choose the primary language or framework for your project
                     </p>
-                    <p className="text-sm mt-2">Coming soon...</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="installCommand">Install Command *</Label>
+                    <Input
+                      id="installCommand"
+                      placeholder="e.g., npm install"
+                      value={installCommand}
+                      onChange={(e) => setInstallCommand(e.target.value)}
+                    />
+                    <p className="text-sm text-gray-500">
+                      Command to install dependencies
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="buildCommand">Build Command *</Label>
+                    <Input
+                      id="buildCommand"
+                      placeholder="e.g., npm run build"
+                      value={buildCommand}
+                      onChange={(e) => setBuildCommand(e.target.value)}
+                    />
+                    <p className="text-sm text-gray-500">
+                      Command to build your application
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="runCommand">Run Command *</Label>
+                    <Input
+                      id="runCommand"
+                      placeholder="e.g., npm start"
+                      value={runCommand}
+                      onChange={(e) => setRunCommand(e.target.value)}
+                    />
+                    <p className="text-sm text-gray-500">
+                      Command to start your application
+                    </p>
                   </div>
                 </div>
               </div>
@@ -369,9 +508,21 @@ export function CreateDeploymentPage() {
               Cancel
             </Button>
             {step === 2 && (
-              <Button disabled>
-                Create Deployment
-                <ChevronRight className="h-4 w-4 ml-2" />
+              <Button
+                onClick={handleSubmit}
+                disabled={!isFormValid || createProject.isPending}
+              >
+                {createProject.isPending ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="h-4 w-4 mr-2" />
+                    Create Project
+                  </>
+                )}
               </Button>
             )}
           </div>

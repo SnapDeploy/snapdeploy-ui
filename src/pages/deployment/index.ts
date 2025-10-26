@@ -1,2 +1,1 @@
-export { CreateDeploymentPage } from './CreateDeploymentPage';
-
+export { CreateProjectPage } from './CreateProjectPage';

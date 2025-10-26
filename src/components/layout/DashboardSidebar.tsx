@@ -5,6 +5,7 @@ import {
   User,
   LogOut,
   ChevronLeft,
+  FolderGit2,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import { useClerk } from "@clerk/clerk-react";
@@ -16,6 +17,11 @@ const navItems = [
     title: "Overview",
     href: "/",
     icon: Home,
+  },
+  {
+    title: "Projects",
+    href: "/projects",
+    icon: FolderGit2,
   },
   {
     title: "Deployments",
@@ -85,7 +91,9 @@ export function DashboardSidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 p-2">
         {navItems.map((item) => {
-          const isActive = location.pathname === item.href;
+          const isActive = 
+            location.pathname === item.href ||
+            (item.href === "/projects" && location.pathname.startsWith("/projects"));
           return (
             <Link
               key={item.href}

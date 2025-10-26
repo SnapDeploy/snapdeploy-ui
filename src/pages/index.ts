@@ -9,5 +9,6 @@ export { DeploymentsPage } from './dashboard/DeploymentsPage';
 export { ProfilePage } from './dashboard/ProfilePage';
 export { SettingsPage } from './dashboard/SettingsPage';
 
-// Deployment Pages
-export { CreateDeploymentPage } from './deployment/CreateDeploymentPage';
+// Project Pages
+export { ProjectsPage, ProjectDetailPage } from './projects';
+export { CreateProjectPage } from './deployment';

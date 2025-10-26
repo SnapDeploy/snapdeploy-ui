@@ -8,6 +8,9 @@ export const queryKeys = {
   users: ['users'] as const,
   user: (id: string) => ['users', id] as const,
   userRepositories: (userId: string) => ['users', userId, 'repositories'] as const,
+  projects: ['projects'] as const,
+  userProjects: (userId: string) => ['users', userId, 'projects'] as const,
+  project: (id: string) => ['projects', id] as const,
 } as const;
 
 // Health check query
@@ -58,6 +61,43 @@ export function useUserRepositories(
     staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
+
+// User projects query with pagination
+export function useUserProjects(
+  userId: string | undefined,
+  params?: {
+    page?: number;
+    limit?: number;
+  }
+) {
+  const api = useApi();
+  
+  return useQuery({
+    queryKey: [...queryKeys.userProjects(userId || ''), params],
+    queryFn: () => {
+      if (!userId) throw new Error('User ID is required');
+      return api.apiService.getUserProjects(userId, params);
+    },
+    enabled: !!userId && api.isSignedIn,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
+// Project query
+export function useProject(projectId: string | undefined) {
+  const api = useApi();
+  
+  return useQuery({
+    queryKey: queryKeys.project(projectId || ''),
+    queryFn: () => {
+      if (!projectId) throw new Error('Project ID is required');
+      return api.apiService.getProject(projectId);
+    },
+    enabled: !!projectId && api.isSignedIn,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+}
+
 // Utility hook to invalidate all user-related queries
 export function useInvalidateUserQueries() {
   const queryClient = useQueryClient();
@@ -68,3 +108,14 @@ export function useInvalidateUserQueries() {
   };
 }
 
+// Utility hook to invalidate project queries
+export function useInvalidateProjectQueries() {
+  const queryClient = useQueryClient();
+  
+  return (userId?: string) => {
+    queryClient.invalidateQueries({ queryKey: queryKeys.projects });
+    if (userId) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.userProjects(userId) });
+    }
+  };
+}

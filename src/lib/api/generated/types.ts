@@ -183,6 +183,221 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/{id}/projects": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user projects
+         * @description Returns all projects for a user with pagination
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number (default is 1) */
+                    page?: number;
+                    /** @description Number of items per page (default is 20, max is 100) */
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Projects retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["ProjectListResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /**
+         * Create a new project
+         * @description Creates a new project for a user
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateProjectRequest"];
+                };
+            };
+            responses: {
+                /** @description Project created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Project"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
+                /** @description Project with this repository URL already exists */
+                409: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a project by ID
+         * @description Returns a single project by its ID
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Project retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Project"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        /**
+         * Update a project
+         * @description Updates an existing project
+         */
+        put: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateProjectRequest"];
+                };
+            };
+            responses: {
+                /** @description Project updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Project"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to update this project */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        post?: never;
+        /**
+         * Delete a project
+         * @description Deletes a project
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Project deleted successfully */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to delete this project */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -291,6 +506,114 @@ export interface components {
             total?: number;
             /** @description Total number of pages */
             total_pages?: number;
+        };
+        CreateProjectRequest: {
+            /**
+             * @description Repository URL
+             * @example https://github.com/user/my-app
+             */
+            repository_url: string;
+            /**
+             * @description Install command to execute (installs dependencies)
+             * @example npm install
+             */
+            install_command: string;
+            /**
+             * @description Build command to execute
+             * @example npm run build
+             */
+            build_command: string;
+            /**
+             * @description Run command to execute
+             * @example npm start
+             */
+            run_command: string;
+            /**
+             * @description Programming language or framework
+             * @example NODE_TS
+             * @enum {string}
+             */
+            language: "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+        };
+        UpdateProjectRequest: {
+            /**
+             * @description Repository URL
+             * @example https://github.com/user/my-app
+             */
+            repository_url: string;
+            /**
+             * @description Install command to execute (installs dependencies)
+             * @example npm install
+             */
+            install_command: string;
+            /**
+             * @description Build command to execute
+             * @example npm run build
+             */
+            build_command: string;
+            /**
+             * @description Run command to execute
+             * @example npm start
+             */
+            run_command: string;
+            /**
+             * @description Programming language or framework
+             * @example NODE_TS
+             * @enum {string}
+             */
+            language: "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+        };
+        Project: {
+            /**
+             * Format: uuid
+             * @description Project unique identifier
+             */
+            id?: string;
+            /**
+             * Format: uuid
+             * @description User ID who owns the project
+             */
+            user_id?: string;
+            /**
+             * @description Repository URL
+             * @example https://github.com/user/my-app
+             */
+            repository_url?: string;
+            /**
+             * @description Install command to execute (installs dependencies)
+             * @example npm install
+             */
+            install_command?: string;
+            /**
+             * @description Build command to execute
+             * @example npm run build
+             */
+            build_command?: string;
+            /**
+             * @description Run command to execute
+             * @example npm start
+             */
+            run_command?: string;
+            /**
+             * @description Programming language or framework
+             * @example NODE_TS
+             * @enum {string}
+             */
+            language?: "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+            /**
+             * Format: date-time
+             * @description Project creation timestamp
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description Project last update timestamp
+             */
+            updated_at?: string;
+        };
+        ProjectListResponse: {
+            projects?: components["schemas"]["Project"][];
+            pagination?: components["schemas"]["Pagination"];
         };
         Error: {
             error?: string;

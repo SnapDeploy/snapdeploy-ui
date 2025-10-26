@@ -45,3 +45,4 @@ export interface ThemeMode {
   mode: 'light' | 'dark';
 }
 
+export type Language = "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
