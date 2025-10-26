@@ -7,7 +7,10 @@ workflows:
   build-and-deploy:
     jobs:
       - build-and-push-ui:
-          context: AWS
+          context:
+            - AWS
+            - API
+            - Clerk
           filters:
             branches:
               only: main
@@ -26,6 +29,7 @@ jobs:
     environment:
       AWS_DEFAULT_REGION: eu-west-1
       VITE_CLERK_PUBLISHABLE_KEY: ${VITE_CLERK_PUBLISHABLE_KEY}
+      VITE_API_URL: ${VITE_API_URL}
     steps:
       - checkout
       - setup_remote_docker
@@ -37,7 +41,7 @@ jobs:
       - run:
           name: Build and Push Docker Image
           command: |
-            docker build --build-arg VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY -t snapdeploy-ui .
+            docker build --build-arg VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY --build-arg VITE_API_URL=$VITE_API_URL -t snapdeploy-ui .
             docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}
             docker tag snapdeploy-ui:latest $ECR_REGISTRY/snapdeploy-dev-ui:latest
             docker push $ECR_REGISTRY/snapdeploy-dev-ui:${CIRCLE_SHA1:0:7}

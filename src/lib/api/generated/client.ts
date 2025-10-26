@@ -3,7 +3,7 @@ import type { paths } from './types';
 
 // Create the API client
 export const apiClient = createClient<paths>({
-  baseUrl: 'https://core-dev.snap-deploy.com/api/v1',
+  baseUrl:  'http://localhost:8080/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },

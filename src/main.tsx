@@ -8,7 +8,9 @@ import { queryClient } from "./lib/query-client";
 import { UserProvider } from "./context/UserContext";
 import "./index.css";
 
-const PUBLISHABLE_KEY = `pk_live_Y2xlcmsuc25hcC1kZXBsb3kuY29tJA`;
+const PUBLISHABLE_KEY =
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? `pk_test_your-publishable-key`;
+console.log(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
