@@ -1,22 +1,40 @@
 #!/usr/bin/env tsx
 
 import { execSync } from 'child_process';
-import { writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { writeFileSync, mkdirSync, existsSync } from 'fs';
+import { join, resolve, dirname } from 'path';
+import { fileURLToPath } from 'url';
 
-const OPENAPI_URL = 'https://raw.githubusercontent.com/SnapDeploy/snapdeploy-core/main/api/openapi.yaml';
+// Get __dirname equivalent in ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Use local OpenAPI spec from snapdeploy-core
+// Can be overridden with OPENAPI_SPEC environment variable
+const OPENAPI_SPEC = process.env.OPENAPI_SPEC || '../snapdeploy-core/api/openapi.yaml';
 const OUTPUT_DIR = 'src/lib/api/generated';
 
 async function generateApiTypes() {
   console.log('🚀 Generating API types from OpenAPI schema...');
   
   try {
+    // Resolve the OpenAPI spec path
+    const openApiPath = resolve(__dirname, '..', OPENAPI_SPEC);
+    
+    // Check if file exists (for local files)
+    if (!OPENAPI_SPEC.startsWith('http') && !existsSync(openApiPath)) {
+      throw new Error(`OpenAPI spec file not found at: ${openApiPath}`);
+    }
+    
+    const specSource = OPENAPI_SPEC.startsWith('http') ? OPENAPI_SPEC : openApiPath;
+    console.log(`📄 Using OpenAPI spec: ${specSource}`);
+    
     // Create output directory
     mkdirSync(OUTPUT_DIR, { recursive: true });
     
     // Generate types using openapi-typescript
     console.log('📝 Generating TypeScript types...');
-    execSync(`npx openapi-typescript "${OPENAPI_URL}" -o "${join(OUTPUT_DIR, 'types.ts')}"`, {
+    execSync(`npx openapi-typescript "${specSource}" -o "${join(OUTPUT_DIR, 'types.ts')}"`, {
       stdio: 'inherit'
     });
     
@@ -54,6 +72,9 @@ import type { components } from './types';
 export type User = components['schemas']['User'];
 export type HealthResponse = components['schemas']['HealthResponse'];
 export type Error = components['schemas']['Error'];
+export type Repository = components['schemas']['Repository'];
+export type UserRepositoriesResponse = components['schemas']['UserRepositoriesResponse'];
+export type Pagination = components['schemas']['Pagination'];
 
 // API Service class
 export class ApiService {
@@ -92,6 +113,39 @@ export class ApiService {
   // Authentication endpoints
   async getCurrentUser() {
     const { data, error } = await apiClient.GET('/auth/me', {
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  // Repository endpoints
+  async syncUserRepositories(userId: string) {
+    const { data, error } = await apiClient.POST('/users/{id}/repos/sync', {
+      params: {
+        path: { id: userId }
+      },
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async getUserRepositories(
+    userId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+      search?: string;
+    }
+  ) {
+    const { data, error } = await apiClient.GET('/users/{id}/repos', {
+      params: {
+        path: { id: userId },
+        query: params
+      },
       headers: this.getHeaders(),
     });
     

@@ -6,6 +6,7 @@ import {
   DeploymentsPage,
   ProfilePage,
   SettingsPage,
+  CreateDeploymentPage,
 } from "./pages";
 import { DashboardLayout } from "./components/layout/DashboardLayout";
 
@@ -23,6 +24,7 @@ function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
+          <Route path="/deployments/new" element={<CreateDeploymentPage />} />
         </Routes>
       </SignedIn>
     </BrowserRouter>

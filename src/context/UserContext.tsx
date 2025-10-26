@@ -54,6 +54,7 @@ export function UserProvider({ children }: UserProviderProps) {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
+  console.log("user", user);
   const value: UserContextValue = {
     user: isSignedIn ? user : null,
     isLoading: !isLoaded || (isSignedIn && isLoading),

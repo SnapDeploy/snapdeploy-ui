@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, Plus, GitBranch, Clock } from "lucide-react";
 import { useCurrentUser } from "@/hooks/useApiQueries";
+import { useNavigate } from "react-router-dom";
 
 interface Deployment {
   id: string;
@@ -66,11 +67,13 @@ const envConfig = {
 };
 
 export function DeploymentsPage() {
+  const navigate = useNavigate();
   const { data: user, isLoading, error } = useCurrentUser();
+
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error: {error.message}</div>;
   if (!user) return <div>No user data</div>;
-  console.log(user);
+
   return (
     <div className="space-y-6">
       {/* Page Header */}
@@ -81,7 +84,7 @@ export function DeploymentsPage() {
             Manage and monitor your application deployments
           </p>
         </div>
-        <Button>
+        <Button onClick={() => navigate("/deployments/new")}>
           <Plus className="mr-2 h-4 w-4" />
           New Deployment
         </Button>

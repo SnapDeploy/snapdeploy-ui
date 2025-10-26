@@ -1,4 +1,5 @@
 import { QueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,6 +18,12 @@ export const queryClient = new QueryClient({
     mutations: {
       // Retry failed mutations once
       retry: 1,
+      // Global error handler for mutations (fallback if not handled by useApiMutation)
+      onError: (error) => {
+        const errorObj = error as { error?: string; message?: string };
+        const errorMessage = errorObj?.message || errorObj?.error || "An unexpected error occurred";
+        console.error("Mutation error:", error);
+      },
     },
   },
 });

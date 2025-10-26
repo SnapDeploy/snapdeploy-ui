@@ -83,6 +83,106 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/users/{id}/repos/sync": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sync user repositories from GitHub
+         * @description Syncs the repositories for a user from GitHub
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Repositories synced successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserRepositoriesSyncResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}/repos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user repositories with search
+         * @description Returns the repositories for a user with pagination and optional search. Search queries match against repository name, full name, and description.
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number (default is 1) */
+                    page?: number;
+                    /** @description Number of items per page (default is 20, max is 100) */
+                    limit?: number;
+                    /**
+                     * @description Search query to filter repositories by name, full name, or description
+                     * @example react
+                     */
+                    search?: string;
+                };
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Repositories retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["UserRepositoriesResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -100,10 +200,97 @@ export interface components {
             /** Format: email */
             email?: string;
             username?: string;
+            /** @description Indicates whether the user has synced any repositories */
+            hasSyncedRepositories?: boolean;
             /** Format: date-time */
             created_at?: string;
             /** Format: date-time */
             updated_at?: string;
+        };
+        UserRepositoriesSyncResponse: {
+            message?: string;
+        };
+        UserRepositoriesResponse: {
+            repositories?: components["schemas"]["Repository"][];
+            pagination?: components["schemas"]["Pagination"];
+        };
+        Repository: {
+            /**
+             * Format: uuid
+             * @description Repository unique identifier
+             */
+            id?: string;
+            /**
+             * @description Repository name
+             * @example my-react-app
+             */
+            name?: string;
+            /**
+             * @description Full repository name (owner/repo)
+             * @example user/my-react-app
+             */
+            full_name?: string;
+            /**
+             * @description Repository description
+             * @example A React application for managing tasks
+             */
+            description?: string | null;
+            /**
+             * @description API URL for the repository
+             * @example https://api.github.com/repos/user/my-react-app
+             */
+            url?: string;
+            /**
+             * @description Web URL for the repository
+             * @example https://github.com/user/my-react-app
+             */
+            html_url?: string | null;
+            /**
+             * @description Whether the repository is private
+             * @example false
+             */
+            private?: boolean;
+            /**
+             * @description Whether the repository is a fork
+             * @example false
+             */
+            fork?: boolean;
+            /**
+             * @description Number of stars
+             * @example 42
+             */
+            stars?: number;
+            /**
+             * @description Number of watchers
+             * @example 15
+             */
+            watchers?: number;
+            /**
+             * @description Number of forks
+             * @example 7
+             */
+            forks?: number;
+            /**
+             * @description Primary programming language
+             * @example JavaScript
+             */
+            language?: string | null;
+            /**
+             * Format: date-time
+             * @description Repository creation timestamp
+             * @example 2024-01-15T10:30:00Z
+             */
+            created_at?: string;
+        };
+        Pagination: {
+            /** @description Current page number */
+            page?: number;
+            /** @description Number of items per page */
+            limit?: number;
+            /** @description Total number of items */
+            total?: number;
+            /** @description Total number of pages */
+            total_pages?: number;
         };
         Error: {
             error?: string;
@@ -134,6 +321,15 @@ export interface components {
         };
         /** @description Resource not found */
         NotFoundError: {
+            headers: {
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["Error"];
+            };
+        };
+        /** @description Internal server error */
+        InternalServerError: {
             headers: {
                 [name: string]: unknown;
             };

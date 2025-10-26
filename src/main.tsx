@@ -6,11 +6,11 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { queryClient } from "./lib/query-client";
 import { UserProvider } from "./context/UserContext";
+import { Toaster } from "sonner";
 import "./index.css";
 
 const PUBLISHABLE_KEY =
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY ?? `pk_test_your-publishable-key`;
-console.log(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
@@ -18,6 +18,7 @@ createRoot(document.getElementById("root")!).render(
       <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
         <UserProvider>
           <App />
+          <Toaster position="top-right" />
           <ReactQueryDevtools initialIsOpen={false} />
         </UserProvider>
       </ClerkProvider>

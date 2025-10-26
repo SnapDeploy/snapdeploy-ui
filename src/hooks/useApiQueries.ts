@@ -7,6 +7,7 @@ export const queryKeys = {
   currentUser: ['auth', 'me'] as const,
   users: ['users'] as const,
   user: (id: string) => ['users', id] as const,
+  userRepositories: (userId: string) => ['users', userId, 'repositories'] as const,
 } as const;
 
 // Health check query
@@ -33,6 +34,28 @@ export function useCurrentUser() {
     enabled: api.isSignedIn,
     // User data is relatively stable
     staleTime: 2 * 60 * 1000, // 2 minutes
+  });
+}
+
+// User repositories query with pagination and search
+export function useUserRepositories(
+  userId: string | undefined,
+  params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }
+) {
+  const api = useApi();
+  
+  return useQuery({
+    queryKey: [...queryKeys.userRepositories(userId || ''), params],
+    queryFn: () => {
+      if (!userId) throw new Error('User ID is required');
+      return api.apiService.getUserRepositories(userId, params);
+    },
+    enabled: !!userId && api.isSignedIn,
+    staleTime: 1 * 60 * 1000, // 1 minute
   });
 }
 // Utility hook to invalidate all user-related queries
