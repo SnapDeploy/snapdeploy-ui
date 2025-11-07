@@ -74,12 +74,22 @@ export function useUserProjects(
   
   return useQuery({
     queryKey: [...queryKeys.userProjects(userId || ''), params],
-    queryFn: () => {
+    queryFn: async () => {
       if (!userId) throw new Error('User ID is required');
-      return api.apiService.getUserProjects(userId, params);
+      
+      const startTime = performance.now();
+      console.log('[PERF] getUserProjects starting...', { userId, params });
+      
+      const result = await api.apiService.getUserProjects(userId, params);
+      
+      const duration = performance.now() - startTime;
+      console.log(`[PERF] getUserProjects completed in ${duration.toFixed(2)}ms`);
+      
+      return result;
     },
     enabled: !!userId && api.isSignedIn,
     staleTime: 30 * 1000, // 30 seconds
+    retry: 1, // Only retry once on failure
   });
 }
 

@@ -1,6 +1,7 @@
 import { StatsCard } from "@/components/dashboard/StatsCard";
 import { RecentActivity } from "@/components/dashboard/RecentActivity";
 import { QuickActions } from "@/components/dashboard/QuickActions";
+import { RecentDeployments } from "@/components/dashboard/RecentDeployments";
 import { Rocket, Package, CheckCircle, TrendingUp } from "lucide-react";
 
 export function Overview() {
@@ -47,10 +48,13 @@ export function Overview() {
 
       {/* Content Grid */}
       <div className="grid gap-6 md:grid-cols-2">
-        <RecentActivity />
+        <RecentDeployments />
         <QuickActions />
+      </div>
+
+      <div className="grid gap-6">
+        <RecentActivity />
       </div>
     </div>
   );
 }
-

@@ -175,7 +175,7 @@ export function CreateProjectPage() {
     }
   };
 
-  const isFormValid = installCommand && buildCommand && runCommand && language;
+  const isFormValid = installCommand && runCommand && language;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -464,15 +464,15 @@ export function CreateProjectPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="buildCommand">Build Command *</Label>
+                    <Label htmlFor="buildCommand">Build Command (Optional)</Label>
                     <Input
                       id="buildCommand"
-                      placeholder="e.g., npm run build"
+                      placeholder="e.g., npm run build (leave empty if no build step)"
                       value={buildCommand}
                       onChange={(e) => setBuildCommand(e.target.value)}
                     />
                     <p className="text-sm text-gray-500">
-                      Command to build your application
+                      Command to build your application. Leave empty if your app doesn't need a build step.
                     </p>
                   </div>
 

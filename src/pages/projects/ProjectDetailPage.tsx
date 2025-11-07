@@ -18,6 +18,7 @@ import {
   Loader2,
   GitBranch,
   ExternalLink,
+  Rocket,
 } from "lucide-react";
 import { useProject } from "@/hooks/useApiQueries";
 import {
@@ -33,6 +34,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { CreateDeploymentDialog } from "@/components/deployment/CreateDeploymentDialog";
+import { DeploymentsList } from "@/components/deployment/DeploymentsList";
+import { useProjectDeployments } from "@/hooks/useDeployments";
 import type { Language } from "@/types";
 
 const LANGUAGES = [
@@ -48,6 +52,8 @@ export function ProjectDetailPage() {
   const navigate = useNavigate();
   const { data: user } = useCurrentUser();
   const { data: project, isLoading } = useProject(id);
+  const { data: deploymentsData, isLoading: deploymentsLoading } =
+    useProjectDeployments(id);
   const updateProject = useUpdateProject(user?.id || "");
   const deleteProject = useDeleteProject(user?.id || "");
 
@@ -128,7 +134,7 @@ export function ProjectDetailPage() {
     repositoryUrl !== (project.repository_url || "");
 
   const isFormValid =
-    installCommand && buildCommand && runCommand && language && repositoryUrl;
+    installCommand && runCommand && language && repositoryUrl;
 
   return (
     <div className="space-y-6">
@@ -246,15 +252,15 @@ export function ProjectDetailPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="buildCommand">Build Command *</Label>
+            <Label htmlFor="buildCommand">Build Command (Optional)</Label>
             <Input
               id="buildCommand"
-              placeholder="e.g., npm run build"
+              placeholder="e.g., npm run build (leave empty if no build step)"
               value={buildCommand}
               onChange={(e) => setBuildCommand(e.target.value)}
             />
             <p className="text-sm text-gray-500">
-              Command to build your application
+              Command to build your application. Leave empty if your app doesn't need a build step.
             </p>
           </div>
 
@@ -295,6 +301,27 @@ export function ProjectDetailPage() {
               {new Date(project.updated_at || "").toLocaleDateString()}
             </span>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Deployments Section */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="flex items-center gap-2">
+              <Rocket className="h-5 w-5" />
+              Deployments
+            </CardTitle>
+            <CreateDeploymentDialog projectId={id!} />
+          </div>
+        </CardHeader>
+        <CardContent>
+          <DeploymentsList
+            deployments={deploymentsData?.deployments || []}
+            isLoading={deploymentsLoading}
+            emptyMessage="No deployments yet"
+            emptyAction={<CreateDeploymentDialog projectId={id!} />}
+          />
         </CardContent>
       </Card>
 

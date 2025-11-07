@@ -8,7 +8,8 @@ export interface User {
   imageUrl?: string;
 }
 
-export interface Deployment {
+// Deprecated - use Deployment from deployment.ts instead
+export interface OldDeployment {
   id: string;
   name: string;
   status: 'success' | 'failed' | 'pending' | 'running';
@@ -46,3 +47,5 @@ export interface ThemeMode {
 }
 
 export type Language = "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+
+export * from './deployment';

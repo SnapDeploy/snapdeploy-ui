@@ -2,7 +2,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Package, Plus, Settings, ExternalLink } from "lucide-react";
-import { useCurrentUser, useUserProjects } from "@/hooks/useApiQueries";
+import { useUserProjects } from "@/hooks/useApiQueries";
+import { useUser } from "@/hooks/useUser";
 import { useNavigate } from "react-router-dom";
 
 const LANGUAGE_COLORS = {
@@ -15,15 +16,29 @@ const LANGUAGE_COLORS = {
 
 export function ProjectsPage() {
   const navigate = useNavigate();
-  const { data: user, isLoading: userLoading } = useCurrentUser();
+  // Use the user hook that gets user from context (no API call needed!)
+  const { user, isLoading: userLoading } = useUser();
+  
+  console.log('[PERF] ProjectsPage render - user:', user?.id, 'loading:', userLoading);
+  
+  // Load projects immediately with user ID from context
   const { data: projectsData, isLoading: projectsLoading } = useUserProjects(
     user?.id
   );
 
   const projects = projectsData?.projects || [];
+  
+  console.log('[PERF] ProjectsPage - projectsLoading:', projectsLoading, 'projects count:', projects.length);
 
   if (userLoading || projectsLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <p>Loading projects...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -79,7 +94,10 @@ export function ProjectsPage() {
                     <div className="space-y-1 flex-1">
                       <div className="flex items-center gap-2">
                         <h3 className="font-semibold">
-                          {project.repository_url?.split("/").pop()?.replace(".git", "") || "Project"}
+                          {project.repository_url
+                            ?.split("/")
+                            .pop()
+                            ?.replace(".git", "") || "Project"}
                         </h3>
                         <Badge
                           className={

@@ -398,6 +398,420 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/deployments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a new deployment
+         * @description Creates a new deployment for a project
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path?: never;
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateDeploymentRequest"];
+                };
+            };
+            responses: {
+                /** @description Deployment created successfully */
+                201: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Deployment"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to create a deployment for this project */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                /** @description Project not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deployments/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get a deployment by ID
+         * @description Returns a single deployment by its ID
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deployment retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Deployment"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        post?: never;
+        /**
+         * Delete a deployment
+         * @description Deletes a deployment
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deployment deleted successfully */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to delete this deployment */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/deployments/{id}/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update deployment status
+         * @description Updates the status of a deployment
+         */
+        patch: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["UpdateDeploymentStatusRequest"];
+                };
+            };
+            responses: {
+                /** @description Deployment status updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Deployment"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to update this deployment */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        trace?: never;
+    };
+    "/deployments/{id}/logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Append to deployment logs
+         * @description Appends a log line to a deployment
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Deployment ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["AppendDeploymentLogRequest"];
+                };
+            };
+            responses: {
+                /** @description Log appended successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Deployment"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to update this deployment */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{id}/deployments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get project deployments
+         * @description Returns all deployments for a project with pagination
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number (default is 1) */
+                    page?: number;
+                    /** @description Number of items per page (default is 20, max is 100) */
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deployments retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeploymentListResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{id}/deployments/latest": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get latest project deployment
+         * @description Returns the most recent deployment for a project
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Latest deployment retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Deployment"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                /** @description No deployments found for this project */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/users/{id}/deployments": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get user deployments
+         * @description Returns all deployments for a user with pagination
+         */
+        get: {
+            parameters: {
+                query?: {
+                    /** @description Page number (default is 1) */
+                    page?: number;
+                    /** @description Number of items per page (default is 20, max is 100) */
+                    limit?: number;
+                };
+                header?: never;
+                path: {
+                    /** @description User ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Deployments retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["DeploymentListResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -613,6 +1027,93 @@ export interface components {
         };
         ProjectListResponse: {
             projects?: components["schemas"]["Project"][];
+            pagination?: components["schemas"]["Pagination"];
+        };
+        CreateDeploymentRequest: {
+            /**
+             * Format: uuid
+             * @description Project ID to deploy
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            project_id: string;
+            /**
+             * @description Git commit hash to deploy
+             * @example abc123def456
+             */
+            commit_hash: string;
+            /**
+             * @description Git branch name
+             * @example main
+             */
+            branch: string;
+        };
+        UpdateDeploymentStatusRequest: {
+            /**
+             * @description New deployment status
+             * @example BUILDING
+             * @enum {string}
+             */
+            status: "PENDING" | "BUILDING" | "DEPLOYING" | "DEPLOYED" | "FAILED" | "ROLLED_BACK";
+        };
+        AppendDeploymentLogRequest: {
+            /**
+             * @description Log line to append
+             * @example Building Docker image...
+             */
+            log_line: string;
+        };
+        Deployment: {
+            /**
+             * Format: uuid
+             * @description Deployment unique identifier
+             */
+            id?: string;
+            /**
+             * Format: uuid
+             * @description Project ID this deployment belongs to
+             */
+            project_id?: string;
+            /**
+             * Format: uuid
+             * @description User ID who created the deployment
+             */
+            user_id?: string;
+            /**
+             * @description Git commit hash
+             * @example abc123def456
+             */
+            commit_hash?: string;
+            /**
+             * @description Git branch name
+             * @example main
+             */
+            branch?: string;
+            /**
+             * @description Current deployment status
+             * @example DEPLOYED
+             * @enum {string}
+             */
+            status?: "PENDING" | "BUILDING" | "DEPLOYING" | "DEPLOYED" | "FAILED" | "ROLLED_BACK";
+            /**
+             * @description Deployment logs
+             * @example Starting build process...
+             *     Building Docker image...
+             *     Deployment completed successfully!
+             */
+            logs?: string;
+            /**
+             * Format: date-time
+             * @description Deployment creation timestamp
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description Deployment last update timestamp
+             */
+            updated_at?: string;
+        };
+        DeploymentListResponse: {
+            deployments?: components["schemas"]["Deployment"][];
             pagination?: components["schemas"]["Pagination"];
         };
         Error: {
