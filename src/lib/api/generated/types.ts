@@ -1104,6 +1104,17 @@ export interface components {
              * @example my-app
              */
             custom_domain?: string | null;
+            /**
+             * @description Whether this project requires a dedicated PostgreSQL database. If true, a fresh database will be created on each deployment.
+             * @default false
+             * @example false
+             */
+            require_db: boolean;
+            /**
+             * @description Optional command to run database migrations (e.g., "npm run migrate", "python manage.py migrate"). Only used if require_db is true.
+             * @example npm run migrate
+             */
+            migration_command?: string | null;
         };
         UpdateProjectRequest: {
             /**
@@ -1137,6 +1148,17 @@ export interface components {
              * @example my-app
              */
             custom_domain?: string | null;
+            /**
+             * @description Whether this project requires a dedicated PostgreSQL database. If true, a fresh database will be created on each deployment.
+             * @default false
+             * @example false
+             */
+            require_db: boolean;
+            /**
+             * @description Optional command to run database migrations (e.g., "npm run migrate", "python manage.py migrate"). Only used if require_db is true.
+             * @example npm run migrate
+             */
+            migration_command?: string | null;
         };
         Project: {
             /**
@@ -1186,6 +1208,22 @@ export interface components {
              * @example https://my-app.snapdeploy.app
              */
             deployment_url?: string;
+            /**
+             * @description Whether this project has a dedicated PostgreSQL database
+             * @example false
+             */
+            require_db?: boolean;
+            /**
+             * @description Database migration command (if configured)
+             * @example npm run migrate
+             */
+            migration_command?: string | null;
+            /**
+             * Format: uri
+             * @description PostgreSQL connection string (only present if require_db is true)
+             * @example postgresql://user:pass@host:5432/proj_abc123?sslmode=require
+             */
+            database_url?: string | null;
             /**
              * Format: date-time
              * @description Project creation timestamp

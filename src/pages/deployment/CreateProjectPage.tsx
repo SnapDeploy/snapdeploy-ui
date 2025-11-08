@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -23,6 +24,7 @@ import {
   Loader2,
   Check,
   Rocket,
+  Database,
 } from "lucide-react";
 import { useCurrentUser, useUserRepositories } from "@/hooks/useApiQueries";
 import { useCreateProject } from "@/hooks/useProjectMutations";
@@ -62,6 +64,8 @@ export function CreateProjectPage() {
   const [runCommand, setRunCommand] = useState("");
   const [language, setLanguage] = useState<string>("");
   const [customDomain, setCustomDomain] = useState("");
+  const [requireDB, setRequireDB] = useState(false);
+  const [migrationCommand, setMigrationCommand] = useState("");
 
   const { data: user } = useCurrentUser();
   const createProject = useCreateProject(user?.id || "");
@@ -158,6 +162,8 @@ export function CreateProjectPage() {
         run_command: runCommand,
         language: language as Language,
         custom_domain: customDomain || undefined,
+        require_db: requireDB,
+        migration_command: migrationCommand || undefined,
       });
       navigate("/projects");
     } catch (err) {
@@ -522,6 +528,67 @@ export function CreateProjectPage() {
                       Leave empty to auto-generate. Use lowercase letters,
                       numbers, and hyphens only.
                     </p>
+                  </div>
+
+                  {/* Database Options */}
+                  <div className="border-t pt-6 space-y-4">
+                    <div className="flex items-center gap-2">
+                      <Database className="h-5 w-5 text-blue-600" />
+                      <h3 className="text-lg font-semibold">
+                        Database Configuration
+                      </h3>
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="requireDB"
+                        checked={requireDB}
+                        onCheckedChange={(checked) =>
+                          setRequireDB(checked as boolean)
+                        }
+                      />
+                      <Label
+                        htmlFor="requireDB"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        Require PostgreSQL Database
+                      </Label>
+                    </div>
+                    <p className="text-sm text-gray-500 ml-6">
+                      A fresh PostgreSQL database will be created on each
+                      deployment. The database URL will be available as{" "}
+                      <span className="font-mono text-xs">DATABASE_URL</span>{" "}
+                      environment variable.
+                    </p>
+
+                    {requireDB && (
+                      <div className="space-y-2 ml-6">
+                        <Label htmlFor="migrationCommand">
+                          Migration Command (Optional)
+                        </Label>
+                        <Input
+                          id="migrationCommand"
+                          placeholder="e.g., npm run migrate"
+                          value={migrationCommand}
+                          onChange={(e) => setMigrationCommand(e.target.value)}
+                        />
+                        <p className="text-sm text-gray-500">
+                          Command to run database migrations after the database
+                          is created. This will run before your app starts.
+                        </p>
+                        <p className="text-xs text-gray-400">
+                          Examples:{" "}
+                          <span className="font-mono">npm run migrate</span>,{" "}
+                          <span className="font-mono">
+                            python manage.py migrate
+                          </span>
+                          ,{" "}
+                          <span className="font-mono">
+                            npx prisma migrate deploy
+                          </span>
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
