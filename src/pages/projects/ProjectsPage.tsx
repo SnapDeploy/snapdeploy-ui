@@ -5,6 +5,7 @@ import { Package, Plus, Settings, ExternalLink } from "lucide-react";
 import { useUserProjects } from "@/hooks/useApiQueries";
 import { useUser } from "@/hooks/useUser";
 import { useNavigate } from "react-router-dom";
+import type { Project } from "@/lib/api/generated/service";
 
 const LANGUAGE_COLORS = {
   NODE: "bg-green-100 text-green-800",
@@ -26,7 +27,7 @@ export function ProjectsPage() {
     user?.id
   );
 
-  const projects = projectsData?.projects || [];
+  const projects: Project[] = projectsData?.projects || [];
   
   console.log('[PERF] ProjectsPage - projectsLoading:', projectsLoading, 'projects count:', projects.length);
 

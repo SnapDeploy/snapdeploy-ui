@@ -122,7 +122,7 @@ export class ApiService {
     return data;
   }
 
-  async createProject(userId: string, request: components['schemas']['CreateProjectRequest']) {
+  async createProject(userId: string, request: CreateProjectRequest) {
     const { data, error } = await apiClient.POST('/users/{id}/projects', {
       params: {
         path: { id: userId }
@@ -135,7 +135,7 @@ export class ApiService {
     return data;
   }
 
-  async updateProject(projectId: string, request: components['schemas']['UpdateProjectRequest']) {
+  async updateProject(projectId: string, request: UpdateProjectRequest) {
     const { data, error } = await apiClient.PUT('/projects/{id}', {
       params: {
         path: { id: projectId }

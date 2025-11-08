@@ -398,6 +398,157 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/projects/{id}/env": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get project environment variables
+         * @description Returns all environment variables for a project (values are masked for security)
+         */
+        get: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Environment variables retrieved successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EnvVarListResponse"];
+                    };
+                };
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to access this project */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        put?: never;
+        /**
+         * Create or update an environment variable
+         * @description Creates a new environment variable or updates an existing one for a project
+         */
+        post: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                };
+                cookie?: never;
+            };
+            requestBody: {
+                content: {
+                    "application/json": components["schemas"]["CreateEnvVarRequest"];
+                };
+            };
+            responses: {
+                /** @description Environment variable created/updated successfully */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["EnvVarResponse"];
+                    };
+                };
+                400: components["responses"]["BadRequestError"];
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to modify this project */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/projects/{id}/env/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete an environment variable
+         * @description Deletes an environment variable from a project
+         */
+        delete: {
+            parameters: {
+                query?: never;
+                header?: never;
+                path: {
+                    /** @description Project ID */
+                    id: string;
+                    /** @description Environment variable key */
+                    key: string;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Environment variable deleted successfully */
+                204: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content?: never;
+                };
+                401: components["responses"]["UnauthorizedError"];
+                /** @description You don't have permission to modify this project */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Error"];
+                    };
+                };
+                404: components["responses"]["NotFoundError"];
+                500: components["responses"]["InternalServerError"];
+            };
+        };
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/deployments": {
         parameters: {
             query?: never;
@@ -1136,6 +1287,58 @@ export interface components {
         DeploymentListResponse: {
             deployments?: components["schemas"]["Deployment"][];
             pagination?: components["schemas"]["Pagination"];
+        };
+        CreateEnvVarRequest: {
+            /**
+             * @description Environment variable key (e.g., "DATABASE_URL", "API_KEY")
+             * @example DATABASE_URL
+             */
+            key: string;
+            /**
+             * @description Environment variable value (will be encrypted server-side)
+             * @example postgresql://localhost:5432/mydb
+             */
+            value: string;
+        };
+        EnvVarResponse: {
+            /**
+             * Format: uuid
+             * @description Environment variable unique identifier
+             */
+            id?: string;
+            /**
+             * Format: uuid
+             * @description Project ID this environment variable belongs to
+             */
+            project_id?: string;
+            /**
+             * @description Environment variable key
+             * @example DATABASE_URL
+             */
+            key?: string;
+            /**
+             * @description Masked value for security (e.g., "p*******b")
+             * @example p*******b
+             */
+            value?: string;
+            /**
+             * Format: date-time
+             * @description Environment variable creation timestamp
+             */
+            created_at?: string;
+            /**
+             * Format: date-time
+             * @description Environment variable last update timestamp
+             */
+            updated_at?: string;
+        };
+        EnvVarListResponse: {
+            environment_variables?: components["schemas"]["EnvVarResponse"][];
+            /**
+             * @description Total number of environment variables
+             * @example 5
+             */
+            count?: number;
         };
         Error: {
             error?: string;

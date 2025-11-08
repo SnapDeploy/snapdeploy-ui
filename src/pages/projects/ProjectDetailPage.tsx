@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dialog";
 import { CreateDeploymentDialog } from "@/components/deployment/CreateDeploymentDialog";
 import { DeploymentsList } from "@/components/deployment/DeploymentsList";
+import { ProjectEnvironmentVariables } from "@/components/project/ProjectEnvironmentVariables";
 import { useProjectDeployments } from "@/hooks/useDeployments";
 import type { Language } from "@/types";
 
@@ -339,6 +340,9 @@ export function ProjectDetailPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Environment Variables */}
+      <ProjectEnvironmentVariables projectId={id!} />
 
       {/* Project Metadata */}
       <Card>

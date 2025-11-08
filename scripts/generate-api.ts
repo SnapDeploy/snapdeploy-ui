@@ -75,6 +75,10 @@ export type Error = components['schemas']['Error'];
 export type Repository = components['schemas']['Repository'];
 export type UserRepositoriesResponse = components['schemas']['UserRepositoriesResponse'];
 export type Pagination = components['schemas']['Pagination'];
+export type Project = components['schemas']['Project'];
+export type ProjectListResponse = components['schemas']['ProjectListResponse'];
+export type CreateProjectRequest = components['schemas']['CreateProjectRequest'];
+export type UpdateProjectRequest = components['schemas']['UpdateProjectRequest'];
 
 // API Service class
 export class ApiService {
@@ -145,6 +149,76 @@ export class ApiService {
       params: {
         path: { id: userId },
         query: params
+      },
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  // Project endpoints
+  async getUserProjects(
+    userId: string,
+    params?: {
+      page?: number;
+      limit?: number;
+    }
+  ) {
+    const { data, error } = await apiClient.GET('/users/{id}/projects', {
+      params: {
+        path: { id: userId },
+        query: params
+      },
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async getProject(projectId: string) {
+    const { data, error } = await apiClient.GET('/projects/{id}', {
+      params: {
+        path: { id: projectId }
+      },
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async createProject(userId: string, request: CreateProjectRequest) {
+    const { data, error } = await apiClient.POST('/users/{id}/projects', {
+      params: {
+        path: { id: userId }
+      },
+      body: request,
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async updateProject(projectId: string, request: UpdateProjectRequest) {
+    const { data, error } = await apiClient.PUT('/projects/{id}', {
+      params: {
+        path: { id: projectId }
+      },
+      body: request,
+      headers: this.getHeaders(),
+    });
+    
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteProject(projectId: string) {
+    const { data, error } = await apiClient.DELETE('/projects/{id}', {
+      params: {
+        path: { id: projectId }
       },
       headers: this.getHeaders(),
     });
