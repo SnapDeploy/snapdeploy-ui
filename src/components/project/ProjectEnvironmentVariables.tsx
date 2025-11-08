@@ -18,6 +18,7 @@ import {
   AlertTitle,
 } from "@/components/ui/alert";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@clerk/clerk-react";
 import { apiClient } from "@/lib/api/generated/client";
 
 interface ProjectEnvironmentVariablesProps {
@@ -26,17 +27,28 @@ interface ProjectEnvironmentVariablesProps {
 
 export function ProjectEnvironmentVariables({ projectId }: ProjectEnvironmentVariablesProps) {
   const queryClient = useQueryClient();
+  const { getToken } = useAuth();
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newKey, setNewKey] = useState("");
   const [newValue, setNewValue] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
+  // Helper to get auth headers
+  const getAuthHeaders = async () => {
+    const token = await getToken();
+    return {
+      Authorization: `Bearer ${token}`,
+    };
+  };
+
   // Fetch environment variables
   const { data: envVarsData, isLoading } = useQuery({
     queryKey: ["projects", projectId, "env"],
     queryFn: async () => {
+      const headers = await getAuthHeaders();
       const response = await apiClient.GET("/projects/{id}/env", {
         params: { path: { id: projectId } },
+        headers,
       });
       if (!response.data) {
         throw new Error("Failed to fetch environment variables");
@@ -48,9 +60,11 @@ export function ProjectEnvironmentVariables({ projectId }: ProjectEnvironmentVar
   // Create/Update environment variable
   const createEnvVarMutation = useMutation({
     mutationFn: async (data: { key: string; value: string }) => {
+      const headers = await getAuthHeaders();
       const response = await apiClient.POST("/projects/{id}/env", {
         params: { path: { id: projectId } },
         body: data,
+        headers,
       });
       if (!response.data) {
         throw new Error("Failed to create environment variable");
@@ -68,8 +82,10 @@ export function ProjectEnvironmentVariables({ projectId }: ProjectEnvironmentVar
   // Delete environment variable
   const deleteEnvVarMutation = useMutation({
     mutationFn: async (key: string) => {
+      const headers = await getAuthHeaders();
       await apiClient.DELETE("/projects/{id}/env/{key}", {
         params: { path: { id: projectId, key } },
+        headers,
       });
     },
     onSuccess: () => {
