@@ -62,6 +62,7 @@ export function ProjectDetailPage() {
   const [runCommand, setRunCommand] = useState("");
   const [language, setLanguage] = useState("");
   const [repositoryUrl, setRepositoryUrl] = useState("");
+  const [customDomain, setCustomDomain] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export function ProjectDetailPage() {
       setRunCommand(project.run_command || "");
       setLanguage(project.language || "");
       setRepositoryUrl(project.repository_url || "");
+      setCustomDomain(project.custom_domain || "");
     }
   }, [project]);
 
@@ -86,6 +88,7 @@ export function ProjectDetailPage() {
           build_command: buildCommand,
           run_command: runCommand,
           language: language as Language,
+          custom_domain: customDomain || undefined,
         },
       });
     } catch (err) {
@@ -131,7 +134,8 @@ export function ProjectDetailPage() {
     buildCommand !== (project.build_command || "") ||
     runCommand !== (project.run_command || "") ||
     language !== (project.language || "") ||
-    repositoryUrl !== (project.repository_url || "");
+    repositoryUrl !== (project.repository_url || "") ||
+    customDomain !== (project.custom_domain || "");
 
   const isFormValid =
     installCommand && runCommand && language && repositoryUrl;
@@ -276,8 +280,65 @@ export function ProjectDetailPage() {
               Command to start your application
             </p>
           </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="customDomain">Custom Domain (Optional)</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="customDomain"
+                placeholder="my-app"
+                value={customDomain}
+                onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
+                className="flex-1"
+              />
+              <span className="text-sm text-gray-500 whitespace-nowrap">.snapdeploy.app</span>
+            </div>
+            <p className="text-sm text-gray-500">
+              Your app will be available at: <span className="font-mono">{customDomain || project.custom_domain || '[not set]'}.snapdeploy.app</span>
+            </p>
+            <p className="text-xs text-gray-400">
+              Use lowercase letters, numbers, and hyphens only. Changes may require redeployment.
+            </p>
+          </div>
         </CardContent>
       </Card>
+
+      {/* Deployment URL */}
+      {project.deployment_url && (
+        <Card className="border-blue-200 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-blue-900">
+              <Rocket className="h-5 w-5" />
+              Live Deployment
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div className="flex flex-col gap-2">
+              <Label className="text-blue-900">Your app is deployed at:</Label>
+              <div className="flex gap-2">
+                <Input
+                  value={project.deployment_url}
+                  readOnly
+                  className="flex-1 bg-white font-mono text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(project.deployment_url, "_blank")}
+                  className="hover:bg-blue-100"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            {project.custom_domain && (
+              <div className="text-sm text-blue-700">
+                Custom subdomain: <span className="font-mono font-semibold">{project.custom_domain}</span>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Project Metadata */}
       <Card>
@@ -289,6 +350,12 @@ export function ProjectDetailPage() {
             <span className="text-gray-500">Project ID:</span>
             <span className="font-mono text-xs">{project.id}</span>
           </div>
+          {project.custom_domain && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Custom Domain:</span>
+              <span className="font-mono">{project.custom_domain}.snapdeploy.app</span>
+            </div>
+          )}
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Created:</span>
             <span>

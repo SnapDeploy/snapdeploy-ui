@@ -61,6 +61,7 @@ export function CreateProjectPage() {
   const [buildCommand, setBuildCommand] = useState("");
   const [runCommand, setRunCommand] = useState("");
   const [language, setLanguage] = useState<string>("");
+  const [customDomain, setCustomDomain] = useState("");
 
   const { data: user } = useCurrentUser();
   const createProject = useCreateProject(user?.id || "");
@@ -156,6 +157,7 @@ export function CreateProjectPage() {
         build_command: buildCommand,
         run_command: runCommand,
         language: language as Language,
+        custom_domain: customDomain || undefined,
       });
       navigate("/projects");
     } catch (err) {
@@ -464,7 +466,9 @@ export function CreateProjectPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="buildCommand">Build Command (Optional)</Label>
+                    <Label htmlFor="buildCommand">
+                      Build Command (Optional)
+                    </Label>
                     <Input
                       id="buildCommand"
                       placeholder="e.g., npm run build (leave empty if no build step)"
@@ -472,7 +476,8 @@ export function CreateProjectPage() {
                       onChange={(e) => setBuildCommand(e.target.value)}
                     />
                     <p className="text-sm text-gray-500">
-                      Command to build your application. Leave empty if your app doesn't need a build step.
+                      Command to build your application. Leave empty if your app
+                      doesn't need a build step.
                     </p>
                   </div>
 
@@ -486,6 +491,36 @@ export function CreateProjectPage() {
                     />
                     <p className="text-sm text-gray-500">
                       Command to start your application
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="customDomain">
+                      Custom Domain (Optional)
+                    </Label>
+                    <div className="flex gap-2 items-center">
+                      <Input
+                        id="customDomain"
+                        placeholder="my-app"
+                        value={customDomain}
+                        onChange={(e) =>
+                          setCustomDomain(e.target.value.toLowerCase())
+                        }
+                        className="flex-1"
+                      />
+                      <span className="text-sm text-gray-500 whitespace-nowrap">
+                        .snapdeploy.app
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-500">
+                      Your app will be available at:{" "}
+                      <span className="font-mono">
+                        {customDomain || "[auto-generated]"}.snapdeploy.app
+                      </span>
+                    </p>
+                    <p className="text-xs text-gray-400">
+                      Leave empty to auto-generate. Use lowercase letters,
+                      numbers, and hyphens only.
                     </p>
                   </div>
                 </div>
