@@ -543,8 +543,8 @@ export function CreateProjectPage() {
                       <Checkbox
                         id="requireDB"
                         checked={requireDB}
-                        onCheckedChange={(checked) =>
-                          setRequireDB(checked as boolean)
+                        onCheckedChange={(checked: boolean) =>
+                          setRequireDB(checked)
                         }
                       />
                       <Label

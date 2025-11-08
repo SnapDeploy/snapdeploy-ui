@@ -90,6 +90,8 @@ export function ProjectDetailPage() {
           run_command: runCommand,
           language: language as Language,
           custom_domain: customDomain || undefined,
+          require_db: false, // TODO: Add UI for database requirement
+          migration_command: undefined,
         },
       });
     } catch (err) {
