@@ -63,7 +63,7 @@ export function CreateDeploymentDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         {trigger || (
-          <Button>
+          <Button data-deploy-button>
             <Rocket className="h-4 w-4 mr-2" />
             New Deployment
           </Button>

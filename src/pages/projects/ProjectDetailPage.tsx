@@ -19,6 +19,7 @@ import {
   GitBranch,
   ExternalLink,
   Rocket,
+  AlertCircle,
 } from "lucide-react";
 import { useProject } from "@/hooks/useApiQueries";
 import {
@@ -65,6 +66,7 @@ export function ProjectDetailPage() {
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [domainChanged, setDomainChanged] = useState(false);
 
   useEffect(() => {
     if (project) {
@@ -74,11 +76,15 @@ export function ProjectDetailPage() {
       setLanguage(project.language || "");
       setRepositoryUrl(project.repository_url || "");
       setCustomDomain(project.custom_domain || "");
+      setDomainChanged(false); // Reset when project loads
     }
   }, [project]);
 
   const handleSave = async () => {
     if (!id) return;
+
+    // Check if custom domain is changing
+    const isDomainChanging = customDomain !== (project?.custom_domain || "");
 
     try {
       await updateProject.mutateAsync({
@@ -94,6 +100,11 @@ export function ProjectDetailPage() {
           migration_command: undefined,
         },
       });
+      
+      // Set flag if domain changed
+      if (isDomainChanging) {
+        setDomainChanged(true);
+      }
     } catch (err) {
       console.error("Failed to update project:", err);
     }
@@ -145,6 +156,47 @@ export function ProjectDetailPage() {
 
   return (
     <div className="space-y-6">
+      {/* Domain Change Alert */}
+      {domainChanged && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-blue-900 mb-1">
+                Domain Updated Successfully
+              </h3>
+              <p className="text-sm text-blue-700 mb-3">
+                Your custom domain has been updated to{" "}
+                <span className="font-mono font-semibold">
+                  {customDomain}.snap-deploy.com
+                </span>
+                . Please create a new deployment to apply the domain changes.
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    const deployBtn = document.querySelector('[data-deploy-button]') as HTMLButtonElement;
+                    deployBtn?.click();
+                  }}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Deploy Now
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setDomainChanged(false)}
+                >
+                  Dismiss
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
