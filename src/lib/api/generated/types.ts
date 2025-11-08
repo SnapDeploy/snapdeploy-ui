@@ -948,6 +948,11 @@ export interface components {
              * @enum {string}
              */
             language: "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+            /**
+             * @description Custom subdomain prefix (e.g., "my-app" becomes "my-app.snapdeploy.app"). Leave empty to auto-generate.
+             * @example my-app
+             */
+            custom_domain?: string | null;
         };
         UpdateProjectRequest: {
             /**
@@ -976,6 +981,11 @@ export interface components {
              * @enum {string}
              */
             language: "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+            /**
+             * @description Custom subdomain prefix (e.g., "my-app" becomes "my-app.snapdeploy.app"). Leave empty to auto-generate.
+             * @example my-app
+             */
+            custom_domain?: string | null;
         };
         Project: {
             /**
@@ -1014,6 +1024,17 @@ export interface components {
              * @enum {string}
              */
             language?: "NODE" | "NODE_TS" | "NEXTJS" | "GO" | "PYTHON";
+            /**
+             * @description Custom subdomain prefix for the project
+             * @example my-app
+             */
+            custom_domain?: string;
+            /**
+             * Format: uri
+             * @description Full deployment URL for the project
+             * @example https://my-app.snapdeploy.app
+             */
+            deployment_url?: string;
             /**
              * Format: date-time
              * @description Project creation timestamp
