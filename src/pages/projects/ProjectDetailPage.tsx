@@ -20,7 +20,9 @@ import {
   ExternalLink,
   Rocket,
   AlertCircle,
+  Database,
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useProject } from "@/hooks/useApiQueries";
 import {
   useUpdateProject,
@@ -65,6 +67,8 @@ export function ProjectDetailPage() {
   const [language, setLanguage] = useState("");
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [customDomain, setCustomDomain] = useState("");
+  const [requireDB, setRequireDB] = useState(false);
+  const [migrationCommand, setMigrationCommand] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [domainChanged, setDomainChanged] = useState(false);
 
@@ -76,6 +80,8 @@ export function ProjectDetailPage() {
       setLanguage(project.language || "");
       setRepositoryUrl(project.repository_url || "");
       setCustomDomain(project.custom_domain || "");
+      setRequireDB(project.require_db || false);
+      setMigrationCommand(project.migration_command || "");
       setDomainChanged(false); // Reset when project loads
     }
   }, [project]);
@@ -96,11 +102,11 @@ export function ProjectDetailPage() {
           run_command: runCommand,
           language: language as Language,
           custom_domain: customDomain || undefined,
-          require_db: false, // TODO: Add UI for database requirement
-          migration_command: undefined,
+          require_db: requireDB,
+          migration_command: migrationCommand || undefined,
         },
       });
-      
+
       // Set flag if domain changed
       if (isDomainChanging) {
         setDomainChanged(true);
@@ -149,10 +155,11 @@ export function ProjectDetailPage() {
     runCommand !== (project.run_command || "") ||
     language !== (project.language || "") ||
     repositoryUrl !== (project.repository_url || "") ||
-    customDomain !== (project.custom_domain || "");
+    customDomain !== (project.custom_domain || "") ||
+    requireDB !== (project.require_db || false) ||
+    migrationCommand !== (project.migration_command || "");
 
-  const isFormValid =
-    installCommand && runCommand && language && repositoryUrl;
+  const isFormValid = installCommand && runCommand && language && repositoryUrl;
 
   return (
     <div className="space-y-6">
@@ -176,7 +183,9 @@ export function ProjectDetailPage() {
                 <Button
                   size="sm"
                   onClick={() => {
-                    const deployBtn = document.querySelector('[data-deploy-button]') as HTMLButtonElement;
+                    const deployBtn = document.querySelector(
+                      "[data-deploy-button]"
+                    ) as HTMLButtonElement;
                     deployBtn?.click();
                   }}
                   className="bg-blue-600 hover:bg-blue-700"
@@ -319,7 +328,8 @@ export function ProjectDetailPage() {
               onChange={(e) => setBuildCommand(e.target.value)}
             />
             <p className="text-sm text-gray-500">
-              Command to build your application. Leave empty if your app doesn't need a build step.
+              Command to build your application. Leave empty if your app doesn't
+              need a build step.
             </p>
           </div>
 
@@ -346,17 +356,90 @@ export function ProjectDetailPage() {
                 onChange={(e) => setCustomDomain(e.target.value.toLowerCase())}
                 className="flex-1"
               />
-              <span className="text-sm text-gray-500 whitespace-nowrap">.snapdeploy.app</span>
+              <span className="text-sm text-gray-500 whitespace-nowrap">
+                .snapdeploy.app
+              </span>
             </div>
             <p className="text-sm text-gray-500">
-              Your app will be available at: <span className="font-mono">{customDomain || project.custom_domain || '[not set]'}.snapdeploy.app</span>
+              Your app will be available at:{" "}
+              <span className="font-mono">
+                {customDomain || project.custom_domain || "[not set]"}
+                .snapdeploy.app
+              </span>
             </p>
             <p className="text-xs text-gray-400">
-              Use lowercase letters, numbers, and hyphens only. Changes may require redeployment.
+              Use lowercase letters, numbers, and hyphens only. Changes may
+              require redeployment.
             </p>
+          </div>
+
+          {/* Database Configuration */}
+          <div className="border-t pt-6 mt-6">
+            <div className="flex items-center space-x-3 mb-4">
+              <Checkbox
+                id="requireDB"
+                checked={requireDB}
+                onCheckedChange={(checked: boolean) => setRequireDB(checked)}
+              />
+              <div>
+                <Label htmlFor="requireDB" className="cursor-pointer">
+                  Require PostgreSQL Database
+                </Label>
+                <p className="text-sm text-gray-500">
+                  A <span className="font-mono text-xs">DATABASE_URL</span>{" "}
+                  environment variable will be injected.
+                </p>
+              </div>
+            </div>
+
+            {requireDB && (
+              <div className="space-y-2 ml-6">
+                <Label htmlFor="migrationCommand">
+                  Migration Command (Optional)
+                </Label>
+                <Input
+                  id="migrationCommand"
+                  placeholder="e.g., npm run migrate or npx prisma migrate deploy"
+                  value={migrationCommand}
+                  onChange={(e) => setMigrationCommand(e.target.value)}
+                />
+                <p className="text-sm text-gray-500">
+                  Command to run database migrations before deployment.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
+
+      {/* Database Status */}
+      {project.require_db && (
+        <Card className="border-green-200 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-green-900">
+              <Database className="h-5 w-5" />
+              PostgreSQL Database
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2">
+              <p className="text-sm text-green-700">
+                This project has a dedicated PostgreSQL database. Your app
+                automatically receives the{" "}
+                <span className="font-mono font-semibold bg-green-100 px-1 rounded">
+                  DATABASE_URL
+                </span>{" "}
+                environment variable.
+              </p>
+              <p className="text-xs text-green-600">
+                Database credentials are revealed once during deployment for
+                security. Check your deployment logs if you need to see them
+                again.
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Deployment URL */}
       {project.deployment_url && (
@@ -388,7 +471,10 @@ export function ProjectDetailPage() {
             </div>
             {project.custom_domain && (
               <div className="text-sm text-blue-700">
-                Custom subdomain: <span className="font-mono font-semibold">{project.custom_domain}</span>
+                Custom subdomain:{" "}
+                <span className="font-mono font-semibold">
+                  {project.custom_domain}
+                </span>
               </div>
             )}
           </CardContent>
@@ -411,7 +497,9 @@ export function ProjectDetailPage() {
           {project.custom_domain && (
             <div className="flex justify-between text-sm">
               <span className="text-gray-500">Custom Domain:</span>
-              <span className="font-mono">{project.custom_domain}.snapdeploy.app</span>
+              <span className="font-mono">
+                {project.custom_domain}.snapdeploy.app
+              </span>
             </div>
           )}
           <div className="flex justify-between text-sm">
