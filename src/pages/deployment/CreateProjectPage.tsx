@@ -65,7 +65,6 @@ export function CreateProjectPage() {
   const [language, setLanguage] = useState<string>("");
   const [customDomain, setCustomDomain] = useState("");
   const [requireDB, setRequireDB] = useState(false);
-  const [migrationCommand, setMigrationCommand] = useState("");
 
   const { data: user } = useCurrentUser();
   const createProject = useCreateProject(user?.id || "");
@@ -163,7 +162,6 @@ export function CreateProjectPage() {
         language: language as Language,
         custom_domain: customDomain || undefined,
         require_db: requireDB,
-        migration_command: migrationCommand || undefined,
       });
       navigate("/projects");
     } catch (err) {
@@ -560,35 +558,6 @@ export function CreateProjectPage() {
                       <span className="font-mono text-xs">DATABASE_URL</span>{" "}
                       environment variable.
                     </p>
-
-                    {requireDB && (
-                      <div className="space-y-2 ml-6">
-                        <Label htmlFor="migrationCommand">
-                          Migration Command (Optional)
-                        </Label>
-                        <Input
-                          id="migrationCommand"
-                          placeholder="e.g., npm run migrate"
-                          value={migrationCommand}
-                          onChange={(e) => setMigrationCommand(e.target.value)}
-                        />
-                        <p className="text-sm text-gray-500">
-                          Command to run database migrations after the database
-                          is created. This will run before your app starts.
-                        </p>
-                        <p className="text-xs text-gray-400">
-                          Examples:{" "}
-                          <span className="font-mono">npm run migrate</span>,{" "}
-                          <span className="font-mono">
-                            python manage.py migrate
-                          </span>
-                          ,{" "}
-                          <span className="font-mono">
-                            npx prisma migrate deploy
-                          </span>
-                        </p>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

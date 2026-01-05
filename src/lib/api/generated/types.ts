@@ -1110,11 +1110,6 @@ export interface components {
              * @example false
              */
             require_db: boolean;
-            /**
-             * @description Optional command to run database migrations (e.g., "npm run migrate", "python manage.py migrate"). Only used if require_db is true.
-             * @example npm run migrate
-             */
-            migration_command?: string | null;
         };
         UpdateProjectRequest: {
             /**
@@ -1154,11 +1149,6 @@ export interface components {
              * @example false
              */
             require_db: boolean;
-            /**
-             * @description Optional command to run database migrations (e.g., "npm run migrate", "python manage.py migrate"). Only used if require_db is true.
-             * @example npm run migrate
-             */
-            migration_command?: string | null;
         };
         Project: {
             /**
@@ -1213,11 +1203,6 @@ export interface components {
              * @example false
              */
             require_db?: boolean;
-            /**
-             * @description Database migration command (if configured)
-             * @example npm run migrate
-             */
-            migration_command?: string | null;
             /**
              * Format: uri
              * @description PostgreSQL connection string (only present if require_db is true)

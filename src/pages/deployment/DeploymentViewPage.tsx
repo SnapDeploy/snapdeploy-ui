@@ -4,9 +4,11 @@ import { useDeployment } from "@/hooks/useDeployments";
 import { useDeploymentMutations } from "@/hooks/useDeploymentMutations";
 import { useProject } from "@/hooks/useApiQueries";
 import { DeploymentLogsViewer } from "@/components/deployment/DeploymentLogsViewer";
+import { RuntimeLogsViewer } from "@/components/deployment/RuntimeLogsViewer";
 import { DeploymentStatusBadge } from "@/components/deployment/DeploymentStatusBadge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowLeft,
   RefreshCw,
@@ -20,6 +22,8 @@ import {
   Copy,
   Check,
   AlertTriangle,
+  Hammer,
+  Server,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
@@ -258,12 +262,44 @@ export function DeploymentViewPage() {
         </div>
       )}
 
-      {/* Logs Viewer - Full Height */}
-      <div className="flex-1 overflow-hidden">
-        <DeploymentLogsViewer
-          deploymentId={deployment.id!}
-          className="h-full"
-        />
+      {/* Tabbed Logs Viewer - Full Height */}
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <Tabs defaultValue="build" className="flex-1 flex flex-col">
+          <div className="border-b bg-white dark:bg-gray-900 px-4">
+            <TabsList className="h-12 bg-transparent p-0 gap-4">
+              <TabsTrigger
+                value="build"
+                className="relative h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4"
+              >
+                <Hammer className="h-4 w-4 mr-2" />
+                Build Logs
+              </TabsTrigger>
+              <TabsTrigger
+                value="runtime"
+                className="relative h-12 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4"
+              >
+                <Server className="h-4 w-4 mr-2" />
+                Runtime Logs
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="build" className="flex-1 overflow-hidden mt-0">
+            <DeploymentLogsViewer
+              deploymentId={deployment.id!}
+              className="h-full"
+            />
+          </TabsContent>
+
+          <TabsContent value="runtime" className="flex-1 overflow-hidden mt-0">
+            <RuntimeLogsViewer
+              projectId={deployment.project_id!}
+              isDeployed={isDeployed}
+              className="h-full"
+              autoRefresh={isDeployed}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

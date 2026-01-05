@@ -68,7 +68,6 @@ export function ProjectDetailPage() {
   const [repositoryUrl, setRepositoryUrl] = useState("");
   const [customDomain, setCustomDomain] = useState("");
   const [requireDB, setRequireDB] = useState(false);
-  const [migrationCommand, setMigrationCommand] = useState("");
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [domainChanged, setDomainChanged] = useState(false);
 
@@ -81,7 +80,6 @@ export function ProjectDetailPage() {
       setRepositoryUrl(project.repository_url || "");
       setCustomDomain(project.custom_domain || "");
       setRequireDB(project.require_db || false);
-      setMigrationCommand(project.migration_command || "");
       setDomainChanged(false); // Reset when project loads
     }
   }, [project]);
@@ -103,7 +101,6 @@ export function ProjectDetailPage() {
           language: language as Language,
           custom_domain: customDomain || undefined,
           require_db: requireDB,
-          migration_command: migrationCommand || undefined,
         },
       });
 
@@ -156,8 +153,7 @@ export function ProjectDetailPage() {
     language !== (project.language || "") ||
     repositoryUrl !== (project.repository_url || "") ||
     customDomain !== (project.custom_domain || "") ||
-    requireDB !== (project.require_db || false) ||
-    migrationCommand !== (project.migration_command || "");
+    requireDB !== (project.require_db || false);
 
   const isFormValid = installCommand && runCommand && language && repositoryUrl;
 
@@ -391,23 +387,6 @@ export function ProjectDetailPage() {
                 </p>
               </div>
             </div>
-
-            {requireDB && (
-              <div className="space-y-2 ml-6">
-                <Label htmlFor="migrationCommand">
-                  Migration Command (Optional)
-                </Label>
-                <Input
-                  id="migrationCommand"
-                  placeholder="e.g., npm run migrate or npx prisma migrate deploy"
-                  value={migrationCommand}
-                  onChange={(e) => setMigrationCommand(e.target.value)}
-                />
-                <p className="text-sm text-gray-500">
-                  Command to run database migrations before deployment.
-                </p>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>
