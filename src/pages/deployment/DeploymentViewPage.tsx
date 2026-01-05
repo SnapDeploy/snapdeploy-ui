@@ -37,8 +37,12 @@ export function DeploymentViewPage() {
   const { data: project } = useProject(deployment?.project_id);
 
   // One-time database URL reveal state
+  // urlRevealed: whether it was revealed in the past (from localStorage)
+  // urlVisible: whether the URL is currently being shown in this session
+  // urlDismissed: whether the user has dismissed the reveal card this session
   const [urlRevealed, setUrlRevealed] = useState(false);
   const [urlVisible, setUrlVisible] = useState(false);
+  const [urlDismissed, setUrlDismissed] = useState(false);
   const [copied, setCopied] = useState(false);
 
   // Check localStorage for whether this deployment's DB URL was already revealed
@@ -54,12 +58,22 @@ export function DeploymentViewPage() {
   // Determine if we should show the reveal card
   const isDeployed = deployment?.status === "DEPLOYED";
   const hasDatabase = project?.require_db && project?.database_url;
-  const canReveal = isDeployed && hasDatabase && !urlRevealed;
+  // Show reveal card if: deployed, has database, not revealed before, AND not dismissed this session
+  // OR if the URL is currently visible (user just revealed it)
+  const showRevealCard =
+    isDeployed && hasDatabase && (!urlRevealed || urlVisible) && !urlDismissed;
+  const showAlreadyRevealedNotice =
+    isDeployed && hasDatabase && urlRevealed && !urlVisible && !showRevealCard;
 
   const handleReveal = () => {
     setUrlVisible(true);
     setUrlRevealed(true);
     localStorage.setItem(storageKey, "true");
+  };
+
+  const handleDismissRevealCard = () => {
+    setUrlVisible(false);
+    setUrlDismissed(true);
   };
 
   const handleCopy = async () => {
@@ -176,31 +190,33 @@ export function DeploymentViewPage() {
       </div>
 
       {/* One-Time Database URL Reveal */}
-      {canReveal && (
+      {showRevealCard && (
         <div className="border-b bg-amber-50 p-4">
           <div className="container mx-auto">
             <Card className="border-amber-300 bg-amber-50">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center gap-2 text-amber-900">
                   <Database className="h-5 w-5" />
-                  Database Connection - One-Time Reveal
+                  Database Connection {urlVisible ? "" : "- One-Time Reveal"}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-start gap-2 p-3 bg-amber-100 rounded-lg">
-                  <AlertTriangle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
-                  <div className="text-sm text-amber-800">
-                    <p className="font-semibold mb-1">
-                      Important Security Notice
-                    </p>
-                    <p>
-                      Your database credentials will only be shown{" "}
-                      <strong>once</strong>. After you reveal and dismiss this
-                      card, the credentials will be hidden permanently. Make
-                      sure to copy and store them securely.
-                    </p>
+                {!urlVisible && (
+                  <div className="flex items-start gap-2 p-3 bg-amber-100 rounded-lg">
+                    <AlertTriangle className="h-5 w-5 text-amber-700 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-semibold mb-1">
+                        Important Security Notice
+                      </p>
+                      <p>
+                        Your database credentials will only be shown{" "}
+                        <strong>once</strong>. After you reveal and dismiss this
+                        card, the credentials will be hidden permanently. Make
+                        sure to copy and store them securely.
+                      </p>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {!urlVisible ? (
                   <Button
@@ -236,6 +252,15 @@ export function DeploymentViewPage() {
                       </code>{" "}
                       environment variable in your app.
                     </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleDismissRevealCard}
+                      className="w-full mt-2"
+                    >
+                      <EyeOff className="h-4 w-4 mr-2" />
+                      I've copied it, hide this card
+                    </Button>
                   </div>
                 )}
               </CardContent>
@@ -245,7 +270,7 @@ export function DeploymentViewPage() {
       )}
 
       {/* Already Revealed Notice */}
-      {isDeployed && hasDatabase && urlRevealed && (
+      {showAlreadyRevealedNotice && (
         <div className="border-b bg-gray-50 p-4">
           <div className="container mx-auto">
             <div className="flex items-center gap-3 text-gray-600">
