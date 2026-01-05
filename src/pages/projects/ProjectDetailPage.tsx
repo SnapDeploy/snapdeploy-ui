@@ -21,6 +21,8 @@ import {
   Rocket,
   AlertCircle,
   Database,
+  RefreshCw,
+  Clock,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useProject } from "@/hooks/useApiQueries";
@@ -39,8 +41,17 @@ import {
 } from "@/components/ui/dialog";
 import { CreateDeploymentDialog } from "@/components/deployment/CreateDeploymentDialog";
 import { DeploymentsList } from "@/components/deployment/DeploymentsList";
+import {
+  ExpirationCountdown,
+  useExpirationCountdown,
+} from "@/components/deployment/ExpirationCountdown";
 import { ProjectEnvironmentVariables } from "@/components/project/ProjectEnvironmentVariables";
-import { useProjectDeployments } from "@/hooks/useDeployments";
+import {
+  useProjectDeployments,
+  useLatestProjectDeployment,
+  useExtendDeployment,
+} from "@/hooks/useDeployments";
+import { toast } from "sonner";
 import type { Language } from "@/types";
 
 const LANGUAGES = [
@@ -420,45 +431,12 @@ export function ProjectDetailPage() {
         </Card>
       )}
 
-      {/* Deployment URL */}
-      {project.deployment_url && (
-        <Card className="border-blue-200 bg-blue-50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-blue-900">
-              <Rocket className="h-5 w-5" />
-              Live Deployment
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex flex-col gap-2">
-              <Label className="text-blue-900">Your app is deployed at:</Label>
-              <div className="flex gap-2">
-                <Input
-                  value={project.deployment_url}
-                  readOnly
-                  className="flex-1 bg-white font-mono text-sm"
-                />
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => window.open(project.deployment_url, "_blank")}
-                  className="hover:bg-blue-100"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-            {project.custom_domain && (
-              <div className="text-sm text-blue-700">
-                Custom subdomain:{" "}
-                <span className="font-mono font-semibold">
-                  {project.custom_domain}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      )}
+      {/* Live Deployment with TTL Info */}
+      <LiveDeploymentCard
+        projectId={id!}
+        deploymentUrl={project.deployment_url}
+        customDomain={project.custom_domain}
+      />
 
       {/* Environment Variables */}
       <ProjectEnvironmentVariables projectId={id!} />
@@ -555,5 +533,187 @@ export function ProjectDetailPage() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+// Separate component for Live Deployment with TTL info
+interface LiveDeploymentCardProps {
+  projectId: string;
+  deploymentUrl?: string;
+  customDomain?: string;
+}
+
+function LiveDeploymentCard({
+  projectId,
+  deploymentUrl,
+  customDomain,
+}: LiveDeploymentCardProps) {
+  const { data: latestDeployment } = useLatestProjectDeployment(projectId);
+  const extendMutation = useExtendDeployment();
+
+  const { urgency, isExpired } = useExpirationCountdown(
+    latestDeployment?.expires_at
+  );
+
+  const isDeployed = latestDeployment?.status === "DEPLOYED";
+  const canExtend = latestDeployment?.can_extend ?? false;
+
+  const handleExtend = async () => {
+    if (!latestDeployment?.id) return;
+
+    try {
+      await extendMutation.mutateAsync(latestDeployment.id);
+      toast.success("Deployment extended by 6 hours");
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : "Failed to extend deployment"
+      );
+    }
+  };
+
+  // Don't show if no deployment URL
+  if (!deploymentUrl) return null;
+
+  // Show warning banner if expiring soon
+  const showExpiryWarning =
+    isDeployed && (urgency === "warning" || urgency === "critical");
+
+  return (
+    <>
+      {/* Expiration Warning Banner */}
+      {showExpiryWarning && (
+        <Card
+          className={`border-2 ${
+            urgency === "critical"
+              ? "border-red-300 bg-red-50"
+              : "border-amber-300 bg-amber-50"
+          }`}
+        >
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Clock
+                  className={`h-5 w-5 ${
+                    urgency === "critical" ? "text-red-600" : "text-amber-600"
+                  }`}
+                />
+                <div>
+                  <p
+                    className={`font-medium ${
+                      urgency === "critical" ? "text-red-900" : "text-amber-900"
+                    }`}
+                  >
+                    {urgency === "critical"
+                      ? "Deployment expiring very soon!"
+                      : "Deployment expiring soon"}
+                  </p>
+                  <p
+                    className={`text-sm ${
+                      urgency === "critical" ? "text-red-700" : "text-amber-700"
+                    }`}
+                  >
+                    Extend now to keep your app running
+                  </p>
+                </div>
+              </div>
+              <Button
+                onClick={handleExtend}
+                disabled={!canExtend || extendMutation.isPending}
+                className={
+                  urgency === "critical"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-amber-600 hover:bg-amber-700"
+                }
+              >
+                {extendMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                )}
+                Extend +6h
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Main Live Deployment Card */}
+      <Card className="border-blue-200 bg-blue-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-blue-900">
+            <Rocket className="h-5 w-5" />
+            Live Deployment
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div className="flex flex-col gap-2">
+            <Label className="text-blue-900">Your app is deployed at:</Label>
+            <div className="flex gap-2">
+              <Input
+                value={deploymentUrl}
+                readOnly
+                className="flex-1 bg-white font-mono text-sm"
+              />
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open(deploymentUrl, "_blank")}
+                className="hover:bg-blue-100"
+              >
+                <ExternalLink className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+
+          {customDomain && (
+            <div className="text-sm text-blue-700">
+              Custom subdomain:{" "}
+              <span className="font-mono font-semibold">{customDomain}</span>
+            </div>
+          )}
+
+          {/* TTL Info Section */}
+          {isDeployed && latestDeployment?.expires_at && (
+            <div className="pt-3 mt-3 border-t border-blue-200">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <ExpirationCountdown
+                    expiresAt={latestDeployment.expires_at}
+                  />
+                  {(latestDeployment.extended_count ?? 0) > 0 && (
+                    <span className="text-xs text-blue-600">
+                      Extended {latestDeployment.extended_count}x (max 3)
+                    </span>
+                  )}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleExtend}
+                  disabled={!canExtend || extendMutation.isPending}
+                  className="border-blue-300 hover:bg-blue-100"
+                >
+                  {extendMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                  )}
+                  Extend +6h
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Expired Message */}
+          {isExpired && (latestDeployment?.status as string) === "EXPIRED" && (
+            <div className="pt-3 mt-3 border-t border-gray-200 bg-gray-100 -mx-6 -mb-6 px-6 py-4 rounded-b-lg">
+              <p className="text-gray-600 text-sm">
+                This deployment has expired. Deploy again to restore your app.
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </>
   );
 }

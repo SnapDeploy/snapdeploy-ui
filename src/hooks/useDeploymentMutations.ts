@@ -8,12 +8,23 @@ type Deployment = components['schemas']['Deployment'];
 type UpdateDeploymentStatusRequest = components['schemas']['UpdateDeploymentStatusRequest'];
 type AppendDeploymentLogRequest = components['schemas']['AppendDeploymentLogRequest'];
 
+// Custom error for active deployment conflict
+export class ActiveDeploymentConflictError extends Error {
+  existingDeployment: Deployment;
+
+  constructor(message: string, existingDeployment: Deployment) {
+    super(message);
+    this.name = 'ActiveDeploymentConflictError';
+    this.existingDeployment = existingDeployment;
+  }
+}
+
 export const useDeploymentMutations = () => {
   const queryClient = useQueryClient();
   const { getToken } = useAuth();
 
   const createDeployment = useMutation({
-    mutationFn: async (data: CreateDeploymentRequest) => {
+    mutationFn: async (data: CreateDeploymentRequest & { force?: boolean }) => {
       const token = await getToken();
       const response = await apiClient.POST('/deployments', {
         body: data,
@@ -21,6 +32,14 @@ export const useDeploymentMutations = () => {
       });
       
       if (response.error) {
+        // Check if it's a 409 Conflict with existing deployment
+        const errorData = response.error as { error?: string; existing_deployment?: Deployment };
+        if (errorData.error === 'active_deployment_exists' && errorData.existing_deployment) {
+          throw new ActiveDeploymentConflictError(
+            'An active deployment already exists for this project',
+            errorData.existing_deployment
+          );
+        }
         throw new Error(response.error.message || 'Failed to create deployment');
       }
       

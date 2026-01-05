@@ -1,10 +1,10 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient, useMutation } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { useEffect, useRef } from 'react';
 import { apiClient } from '../lib/api/generated/client';
 import type { components } from '../lib/api/generated/types';
+import type { ExtendDeploymentResponse, Deployment } from '../types/deployment';
 
-type Deployment = components['schemas']['Deployment'];
 type DeploymentListResponse = components['schemas']['DeploymentListResponse'];
 
 /**
@@ -166,6 +166,40 @@ export const useUserDeployments = (
 };
 
 /**
+ * Hook to extend a deployment's TTL
+ */
+export const useExtendDeployment = () => {
+  const { getToken } = useAuth();
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (deploymentId: string): Promise<ExtendDeploymentResponse> => {
+      const token = await getToken();
+      
+      const response = await fetch(`/api/v1/deployments/${deploymentId}/extend`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to extend deployment');
+      }
+
+      return response.json();
+    },
+    onSuccess: (_, deploymentId) => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['deployments', deploymentId] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+    },
+  });
+};
+
+/**
  * Helper function to get deployment status color
  */
 export const getDeploymentStatusColor = (status: string): string => {
@@ -182,6 +216,8 @@ export const getDeploymentStatusColor = (status: string): string => {
       return 'text-red-500 bg-red-100';
     case 'ROLLED_BACK':
       return 'text-yellow-500 bg-yellow-100';
+    case 'EXPIRED':
+      return 'text-gray-400 bg-gray-50';
     default:
       return 'text-gray-500 bg-gray-100';
   }
@@ -198,6 +234,13 @@ export const isDeploymentInProgress = (status: string): boolean => {
  * Helper function to check if deployment is terminal (completed/failed)
  */
 export const isDeploymentTerminal = (status: string): boolean => {
-  return ['DEPLOYED', 'FAILED', 'ROLLED_BACK'].includes(status);
+  return ['DEPLOYED', 'FAILED', 'ROLLED_BACK', 'EXPIRED'].includes(status);
+};
+
+/**
+ * Helper function to check if deployment is active (running and can expire)
+ */
+export const isDeploymentActive = (status: string): boolean => {
+  return status === 'DEPLOYED';
 };
 
