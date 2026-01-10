@@ -39,7 +39,7 @@ export function CreateDeploymentDialog({
   projectId,
   trigger,
   defaultBranch = "main",
-  defaultCommit = "",
+  defaultCommit = "HEAD",
 }: CreateDeploymentDialogProps) {
   const navigate = useNavigate();
   const { createDeployment } = useDeploymentMutations();

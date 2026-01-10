@@ -1,5 +1,5 @@
 import { useUser } from "@clerk/clerk-react";
-import { Bell, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -44,12 +44,6 @@ export function Header() {
 
       {/* Right Side */}
       <div className="flex items-center gap-4">
-        {/* Notifications */}
-        <button className="relative rounded-full p-2 hover:bg-gray-100">
-          <Bell className="h-5 w-5 text-gray-600" />
-          <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" />
-        </button>
-
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
